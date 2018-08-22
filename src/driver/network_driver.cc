@@ -118,7 +118,7 @@ int main(int argc, char **argv)
   s3 = localtime(&timer1)->tm_sec;
   
   printf("# of Neurons : %d, # of Synapses : %lu, # of Spikes : %lu\n",
-         n.nb_neurons,n.num_synapses,n.history.size());
+         n.nb_neurons,n.num_synapses,n.outputs.size());
   
   printf("Computation time : %d sec\n",(h3-h2)*3600+(m3-m2)*60+s3-s2);
   
@@ -129,11 +129,11 @@ int main(int argc, char **argv)
   
       int k = 0;
       char buf[20];
-      while (!(n.history.empty()))
+      while (!(n.outputs.empty()))
         {
           k++;
-          Spike s = n.history.front();
-          n.history.pop();
+          Spike s = n.outputs.front();
+          n.outputs.pop();
           sprintf(buf,"%d",(s.sender));
           fputs(buf,file);
           sprintf(buf,"%f",s.t*Taum);

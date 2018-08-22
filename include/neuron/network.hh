@@ -40,7 +40,7 @@ namespace neuron
   
     void start(); // Start the simulation
     int step();	// One simulation step
-    std::queue<Spike> history; // History of spikes
+    std::queue<Spike> outputs; // Output spikes
     
     double t;
     double tstop;

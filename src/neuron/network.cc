@@ -160,7 +160,7 @@ namespace neuron
 
                 
                 t = s->t;
-                history.push(*s);
+                outputs.push(*s);
                 pop_vec.at(s->sender)->pulse();
 
                 double average_interval = pop_vec.at(s->sender)->average_interval();
