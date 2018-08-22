@@ -1,0 +1,15 @@
+AR		:= ar
+CC		:= g++
+LD        	:= g++
+
+LINK_MPI        = -L$(MPI_LIBDIR) -lmpich
+
+CFLAGS		= -Wall -I$(MPI_INCDIR) -I../include
+LDFLAGS		= 
+
+MPI_DIR		:= /usr
+MPI_INCDIR	:= $(MPI_DIR)/include/mpich
+MPI_LIBDIR	:= $(MPI_DIR)/lib/x86_64-linux-gnu/
+
+include rules.make
+
