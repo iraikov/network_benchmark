@@ -59,7 +59,8 @@ namespace neuron
   };
 
   typedef ra_priority_queue< Spike, compare_spikes> SpikePrioQ;
-  
+
+  /*! Priority queue for Spike objects */
   struct Ncq
   {
     SpikePrioQ pq;

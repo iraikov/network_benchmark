@@ -22,6 +22,7 @@ If you modify the source file, please don't delete this header
 namespace neuron
 {
   
+  /*! Spike structure containing spike time and sender id. */
   struct Spike
   {
     Spike(int sender, double time)
@@ -35,7 +36,7 @@ namespace neuron
     };
   
     int sender;
-    double t; //the neuron 'from' will spike at 't' 
+    double t; //the neuron 'sender' will spike at 't' 
         
 #ifdef WITH_LOWER_BOUND
     bool computed; //true if t is the exact spiking time, otherwise t is a lower bound of the spiking time
