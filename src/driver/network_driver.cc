@@ -117,8 +117,9 @@ int main(int argc, char **argv)
   m3 = localtime(&timer1)->tm_min;
   s3 = localtime(&timer1)->tm_sec;
   
-  printf("# of Neurons : %d, # of Synapses : %lu, # of Spikes : %lu\n",
-         n.nb_neurons,n.num_synapses,n.outputs.size());
+  printf("# of Neurons : %d, Total # of Synapses : %lu, input synapses: %lu output synapses: %lu\n",
+         n.nb_neurons,n.num_synapses,n.num_input_synapses,n.num_output_synapses);
+  printf("# of Spikes : %lu\n", n.outputs.size());
   
   printf("Computation time : %d sec\n",(h3-h2)*3600+(m3-m2)*60+s3-s2);
   

@@ -19,10 +19,12 @@ If you modify the source file, please don't delete this header
 
 //########## NETWORK #######
 #define EXT_INPUTS 100			// number of external inputs
+#define EXT_OUTPUTS 100			// number of external outputs
 #define EXT_RATE 10.			// firing rate of external inputs
 #define NEURONS 1000			// number of neurons		
 #define AVERAGE_SYNAPSES 120		// Average number of synapses per neuron
 #define AVERAGE_EXT_SYNAPSES 100        // Average number of synapses per external source
+#define AVERAGE_OUTPUT_SYNAPSES 250     // Average number of synapses per output
 #define INHIBITORY_PROPORTION 0.2	// Inhibitory neurons proportion
 
 
@@ -65,6 +67,7 @@ If the line is commented, the network computes the exact spiking time each time.
 #define INHIBITORY_NEURONS ((int)(NEURONS*INHIBITORY_PROPORTION))									
 #define PROB_SYNAPSES ((double)AVERAGE_SYNAPSES / (double)NEURONS)
 #define PROB_EXT_SYNAPSES ((double)AVERAGE_EXT_SYNAPSES / (double)NEURONS)
+#define PROB_OUTPUT_SYNAPSES ((double)AVERAGE_OUTPUT_SYNAPSES / (double)NEURONS)
 #define EPS 0.00000001
 #define REFRACT REFRACT_/taum	 
 #define DELAY DELAY_/taum	 

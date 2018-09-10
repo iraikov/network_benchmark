@@ -43,8 +43,10 @@ namespace neuron
 
     t = 0.0;
     tstop = tstop_;
-    nb_neurons = NEURONS + EXT_INPUTS;
+    nb_neurons = NEURONS + EXT_INPUTS + EXT_OUTPUTS;
     num_synapses = 0;
+    num_input_synapses = 0;
+    num_output_synapses = 0;
     
     q = shared_ptr<Ncq>(new Ncq());
     
@@ -68,9 +70,18 @@ namespace neuron
         shared_ptr <PoissonSource> p(new PoissonSource(q,i,Taum,i,EXT_RATE));
         pop_vec.push_back(p);
       }
+
+    int offset_inhibitory = EXT_INPUTS+INHIBITORY_NEURONS;
+    int start_inhibitory = EXT_INPUTS;
+    
+    int offset_excitatory = EXT_INPUTS+NEURONS;
+    int start_excitatory = EXT_INPUTS+INHIBITORY_NEURONS;
+    
+    int offset_output = EXT_INPUTS+EXT_OUTPUTS+NEURONS;
+    int start_output = EXT_INPUTS+NEURONS;
     
     // initialization of inhibitory and excitatory neurons.
-    for (int i=EXT_INPUTS;i<EXT_INPUTS+INHIBITORY_NEURONS;i++)
+    for (int i=start_inhibitory;i<offset_inhibitory;i++)
       {
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
@@ -78,7 +89,17 @@ namespace neuron
         shared_ptr <Neuron> p (new Neuron(q,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Inhibitory,i));
         pop_vec.push_back(p);
       }
-    for (int i=EXT_INPUTS+INHIBITORY_NEURONS;i<nb_neurons;i++)
+    
+    for (int i=start_excitatory;i<offset_excitatory;i++)
+      {
+        double Vinit = sample_Vinit(rand);
+        double geinit = sample_geinit(rand);
+        double giinit = sample_giinit(rand);
+        shared_ptr <Neuron> p (new Neuron(q,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
+        pop_vec.push_back(p);
+      }
+    
+    for (int i=start_output;i<offset_output;i++)
       {
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
@@ -87,10 +108,11 @@ namespace neuron
         pop_vec.push_back(p);
       }
 
-    //initialization of synapses
-    for (int i=EXT_INPUTS;i<nb_neurons;i++)
+
+    // Recurrent connectivity within inhibitory + excitatory population
+    for (int i=EXT_INPUTS;i<EXT_INPUTS+NEURONS;i++)
       {
-        for (int j=EXT_INPUTS;j<nb_neurons;j++)
+        for (int j=EXT_INPUTS;j<EXT_INPUTS+NEURONS;j++)
           {
             if (i!=j)
               {
@@ -103,9 +125,27 @@ namespace neuron
               }
           }
       }
+    // Convergence onto output neurons
+    for (int i=EXT_INPUTS;i<EXT_INPUTS+NEURONS;i++)
+      {
+        for (int j=EXT_INPUTS+NEURONS;j<EXT_INPUTS+NEURONS+EXT_OUTPUTS;j++)
+          {
+            if (i!=j)
+              {
+                double prob = sample_connect(rand);
+                if (prob <= PROB_OUTPUT_SYNAPSES)
+                  {
+                    pop_vec.at(i)->targets.insert(make_pair(j, pop_vec.at(j)));
+                    num_synapses++;
+                    num_output_synapses++;
+                  }
+              }
+          }
+      }
+    // External inputs to inhibitory + excitatory population
     for (int i=0;i<EXT_INPUTS;i++)
       {
-        for (int j=EXT_INPUTS;j<nb_neurons;j++)
+        for (int j=EXT_INPUTS;j<EXT_INPUTS+NEURONS;j++)
           {
             if (i!=j)
               {
@@ -114,6 +154,7 @@ namespace neuron
                   {
                     pop_vec.at(i)->targets.insert(make_pair(j, pop_vec.at(j)));
                     num_synapses++;
+                    num_input_synapses++;
                   }
               }
           }

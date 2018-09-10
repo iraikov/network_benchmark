@@ -69,6 +69,8 @@ namespace neuron
 
     int nb_neurons;	/**< number of neurons in the network */
     size_t num_synapses; /**< number of synapses in the network */
+    size_t num_input_synapses; /**< number of input synapses in the network */
+    size_t num_output_synapses; /**< number of output synapses in the network */
     
     std::vector<shared_ptr<SpikeSource>> pop_vec; /**< Vector of neurons in the network */
     std::shared_ptr<Ncq> q;  /**< priority queue with pending spike times */
