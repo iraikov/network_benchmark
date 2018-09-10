@@ -44,7 +44,7 @@ void IFSC_Done();
 
 double tableRho(double g);
 double rho(double g);
-
+double alpha(double t, double t_peak);
 
 
 

@@ -51,7 +51,7 @@ namespace neuron
     this->update_spike();
   }
 
-  void PoissonSource::ReceivePulse(int sender, double t, NeuronType source_type)
+  void PoissonSource::ReceivePulse(int sender, double t, NeuronType source_type, double s)
   {
     printf("Spike sent to PoissonSource id %d: sender = %d", id, sender);
     throw;
@@ -86,7 +86,7 @@ namespace neuron
           }
         for (auto const& item : targets)
           {
-            item.second->ReceivePulse(id,spike->t+DELAY,type);
+            item.second.target->ReceivePulse(id,spike->t+DELAY,type,item.second.s);
           }
         last_pulse = time;
         time = spike->t;
@@ -117,8 +117,7 @@ namespace neuron
   };
 
 
-  Neuron::Neuron(shared_ptr<Ncq>& queue_,double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double tauminit ,double dgiinit, double dgeinit, NeuronType type_,int id_)
-  {
+  Neuron::Neuron(std::shared_ptr<Ncq>& queue_, std::shared_ptr<double>& DA_, double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double tauminit, double dgiinit, double dgeinit, NeuronType type_, int id_)  {
     V = Vinit;
     El = Elinit;
   
@@ -148,7 +147,10 @@ namespace neuron
   
     Es = (ge*Eeinit + gi*Eiinit)/(ge+gi);
     g = ge + gi;
-  
+
+    stdp = 0.0;
+    DA = DA_;
+    
     spike = update_spike(false);
     if (spike.has_value())
       {
@@ -160,7 +162,7 @@ namespace neuron
 
 
 
-  void Neuron::ReceivePulse(int sender, double t, NeuronType source_type)
+  void Neuron::ReceivePulse(int sender, double t, NeuronType source_type, double s)
   {
 	
     double gPulse;
@@ -201,19 +203,19 @@ namespace neuron
       case Inhibitory:
         {
           // new parameters at t = ReceivePulse
-          Es = (gPulse*Es + dgi * Ei)/(gPulse+dgi);
+          Es = (gPulse*Es + s * dgi * Ei)/(gPulse+dgi);
           gPulse += dgi;
         }
         break;
       case Excitatory:
         {
-          Es = (gPulse*Es + dge*Ee)/(gPulse+dge);
+          Es = (gPulse*Es + s * dge * Ee)/(gPulse+dge);
           gPulse += dge;
         }
         break;
       case External:
         {
-          Es = (gPulse*Es + dge*Ee)/(gPulse+dge);
+          Es = (gPulse*Es + s * dge * Ee)/(gPulse+dge);
           gPulse += dge;
         }
         break;
@@ -285,7 +287,7 @@ namespace neuron
     // the neuron spikes 
     for (auto const& item : targets)
       {
-        item.second->ReceivePulse(id,time+DELAY,type);
+        item.second.target->ReceivePulse(id,time+DELAY,type,item.second.s);
       }
 
     spike_count++;

@@ -19,7 +19,9 @@ Last updated : August 2018
 
 */
 
+#include <memory>
 #include "nonstd/optional.hh"
+#include "netcon.hh"
 #include "network.hh"
 
 using namespace std;
@@ -42,7 +44,9 @@ namespace neuron
   {
 
     t = 0.0;
+    t_DA = -1.0;
     tstop = tstop_;
+    DA = unique_ptr<double>(new double (0.0));
     nb_neurons = NEURONS + EXT_INPUTS + EXT_OUTPUTS;
     num_synapses = 0;
     num_input_synapses = 0;
@@ -86,7 +90,7 @@ namespace neuron
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
         double giinit = sample_giinit(rand);
-        shared_ptr <Neuron> p (new Neuron(q,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Inhibitory,i));
+        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Inhibitory,i));
         pop_vec.push_back(p);
       }
     
@@ -95,7 +99,7 @@ namespace neuron
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
         double giinit = sample_giinit(rand);
-        shared_ptr <Neuron> p (new Neuron(q,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
+        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
         pop_vec.push_back(p);
       }
     
@@ -104,7 +108,7 @@ namespace neuron
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
         double giinit = sample_giinit(rand);
-        shared_ptr <Neuron> p (new Neuron(q,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
+        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
         pop_vec.push_back(p);
       }
 
@@ -119,12 +123,14 @@ namespace neuron
                 double prob = sample_connect(rand);
                 if (prob <= PROB_SYNAPSES)
                   {
-                    pop_vec.at(i)->targets.insert(make_pair(j, pop_vec.at(j)));
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), 1.0);
+                    pop_vec.at(i)->targets.insert(make_pair(j, nc));
                     num_synapses++;
                   }
               }
           }
       }
+    
     // Convergence onto output neurons
     for (int i=EXT_INPUTS;i<EXT_INPUTS+NEURONS;i++)
       {
@@ -135,7 +141,8 @@ namespace neuron
                 double prob = sample_connect(rand);
                 if (prob <= PROB_OUTPUT_SYNAPSES)
                   {
-                    pop_vec.at(i)->targets.insert(make_pair(j, pop_vec.at(j)));
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), 1.0);
+                    pop_vec.at(i)->targets.insert(make_pair(j, nc));
                     num_synapses++;
                     num_output_synapses++;
                   }
@@ -152,13 +159,15 @@ namespace neuron
                 double prob = sample_connect(rand);
                 if (prob <= PROB_EXT_SYNAPSES)
                   {
-                    pop_vec.at(i)->targets.insert(make_pair(j, pop_vec.at(j)));
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), 1.0);
+                    pop_vec.at(i)->targets.insert(make_pair(j, nc));
                     num_synapses++;
                     num_input_synapses++;
                   }
               }
           }
       }
+
       
   };
 
@@ -199,6 +208,24 @@ namespace neuron
               { //the time is exact
 #endif //WITH_LOWER_BOUND
 
+                if (!reward.empty())
+                  {
+                    if (reward.top() < s->t*Taum)
+                      {
+                        double t_reward = reward.top()/Taum;
+                        reward.pop();
+
+                        if (t_DA >= 0.0)
+                          {
+                            *DA = *DA * exp(-DA_LAMBDA * (t-t_DA)) + alpha((t-t_reward)*Taum, DA_T_PEAK_);
+                          }
+                        else
+                          {
+                            *DA = alpha((t-t_reward)*Taum, DA_T_PEAK_);
+                          }
+                        t_DA = t;
+                      }
+                  }
                 
                 t = s->t;
                 outputs.push(*s);

@@ -29,50 +29,18 @@ Last updated : August 2018
 #include "nonstd/optional.hh"
 #include "utils.hh"
 #include "Ncq.hh"
+#include "spike_source.hh"
+#include "netcon.hh"
 
 using namespace std;
 using nonstd::optional;
 using nonstd::nullopt;
 
+#ifndef NEURON_H
+#define NEURON_H
+
 namespace neuron
 {
-  /** 
-   *  Enumerated type for the different classes of neurons
-   */    
-  enum NeuronType
-    {
-      Excitatory, Inhibitory, External
-    };
-  
-  /*! An abstract class to represent the different classes of spiking sources. */
-  struct SpikeSource
-  {
-    int id;                     /**< id for this spike source */
-    std::map<int, std::shared_ptr<SpikeSource>> targets; /**< Post-synaptic targets */
-    NeuronType type;            /**< Type of spike source */
-
-    virtual ~SpikeSource();
-    /** 
-     * This method is invoked when a spike is received.
-     * 
-     * @param sender the id of the sender spike source
-     * @param t the time of the spike
-     * @param source_type the type of the sender
-     */
-    virtual void ReceivePulse (int sender, double t, NeuronType source_type) = 0;
-    /** 
-     * This method is called at the time when the spike source must emit a spike.
-     * 
-     */
-    virtual void pulse() = 0;
-    /** 
-     * 
-     * This method returns the average time interval between spikes.
-     * 
-     * @return Average time interval between spikes.
-     */
-    virtual double average_interval() = 0;
-  };
 
   /*! Source of spikes that are Poisson-distributed in time. */  
   struct PoissonSource : public SpikeSource
@@ -88,7 +56,7 @@ namespace neuron
     double lambda; /**< interval parameter, ms */
     std::exponential_distribution<double> sample_spike; /**< distribution of spike intervals */
     std::default_random_engine rand; /**< random number generator */
-    
+
     ~PoissonSource();
     PoissonSource(std::shared_ptr<Ncq>& queue, int id, double tauminit, int seed, double rate);
 
@@ -99,7 +67,7 @@ namespace neuron
      * @param t the time of the spike
      * @param source_type the type of the sender
      */
-    void ReceivePulse(int sender, double t, NeuronType source_type);
+    void ReceivePulse(int sender, double t, NeuronType source_type, double s);
     
     /** 
      * Calls ReceiveSpike on all post-synaptic targets and computes the time of the next spike.
@@ -149,9 +117,9 @@ namespace neuron
      * @param id id of the neuron
      * 
      */
-    Neuron(std::shared_ptr<Ncq>& queue, double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double tauminit ,double dgiinit, double dgeinit, NeuronType type_, int id);
+    Neuron(std::shared_ptr<Ncq>& queue, std::shared_ptr<double>& DA, double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double tauminit, double dgiinit, double dgeinit, NeuronType type_, int id);
 
-    void ReceivePulse(int sender, double t, NeuronType source_type); 
+    void ReceivePulse(int sender, double t, NeuronType source_type, double s); 
     void pulse(); 
 	
 #ifdef WITH_LOWER_BOUND
@@ -166,6 +134,11 @@ namespace neuron
     double taus,taum; /**< Synaptic and membrane time constants */
     double g,ge,gi; /**< Membrane and synaptic conductances */
     double dge,dgi; /**< Synaptic weights */
+
+    std::shared_ptr<double> DA;/**< level of dopamine above the baseline */
+    double coincidence_interval;  /**< the coincidence interval for plasticity */
+    double stdp;
+    
     std::shared_ptr<Ncq> queue;      /**< Queue of spikes shared with the network and all other SpikeSource instances. */
     std::deque<float> window; /**< Sliding window of intervals between recent spikes. */
     size_t spike_count; /**< Spike count */
@@ -225,3 +198,4 @@ namespace neuron
   };
 
 }
+#endif //NEURON

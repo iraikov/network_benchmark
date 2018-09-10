@@ -42,6 +42,11 @@ If you modify the source file, please don't delete this header
 #define Ee__ (0.)		//Excitatory reversal potential, mV
 #define Ei__ (-80.)		//Inhibitory reversal potential, mV
 
+//#################### Reward parameters ##############
+#define DA_T_PEAK_ 1.0 // DA time to peak, ms. 
+#define DA_LAMBDA_ 1.0 // DA decay constant
+
+
 //#### Moving rate average parameters ###################
 
 #define MOVING_AVG_WINDOW_SIZE 6 //Number of intervals for moving average of firing rate 
@@ -73,6 +78,7 @@ If the line is commented, the network computes the exact spiking time each time.
 #define DELAY DELAY_/taum	 
 #define Taue (5./Taum) //***
 #define Taui Taue	//***
+#define DA_LAMBDA (-1.0*Taum)
 
 #define Vt_ (Vt__- El__)   
 #define Vr_ (Vr__- El__ )	

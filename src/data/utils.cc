@@ -232,3 +232,12 @@ double rho(double g)
   return sum;
 }
 
+// ************************************************************
+// ALPHA FUNCTION
+// ************************************************************
+double alpha(double t, double t_peak)
+{
+  double result = (t / t_peak) * exp (1.0 - t / t_peak);
+
+  return result;
+}

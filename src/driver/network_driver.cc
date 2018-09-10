@@ -24,8 +24,10 @@ Last updated : August 2018
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <time.h>
 #include <getopt.h>
+#include <iomanip>
 
 #include "network.hh"
 
@@ -45,6 +47,7 @@ void print_usage_full(char** argv)
     "-h         Print this help" << endl <<
     "-t TSTOP   Simulation until TSTOP ms " << endl <<
     "-o PATH    Write spike times to PATH " << endl <<
+    "-p PATH    Write network connections to PATH " << endl <<
     "-s SEED    Random number generator seed " << endl <<
     endl;
 }
@@ -56,18 +59,19 @@ int main(int argc, char **argv)
   time_t timer1;
 
   int seed = 0;
-  string output_file;
+  string output_spike_file, output_edge_file;
   double t_stop = 100.0;
   bool opt_t_stop = false;
   bool opt_output_file = false;
   bool opt_random_seed = false;
+  bool opt_output_edges = false;
   // parse arguments
   static struct option long_options[] = {
     {0,         0,                 0,  0 }
   };
   char c;
   int option_index = 0;
-  while ((c = getopt_long (argc, argv, "ht:o:s:", long_options, &option_index)) != -1)
+  while ((c = getopt_long (argc, argv, "ht:o:s:p:", long_options, &option_index)) != -1)
     {
       stringstream ss;
       switch (c)
@@ -82,7 +86,12 @@ int main(int argc, char **argv)
         case 'o':
           opt_output_file = true;
           ss << string(optarg);
-          ss >> output_file;
+          ss >> output_spike_file;
+          break;
+        case 'p':
+          opt_output_edges = true;
+          ss << string(optarg);
+          ss >> output_edge_file;
           break;
         case 's':
           opt_random_seed = true;
@@ -101,6 +110,23 @@ int main(int argc, char **argv)
   
   // Construct the network 
   Network n(t_stop, seed);
+  if (opt_output_file)
+    {
+      printf("Writing edges in %s...",output_edge_file.c_str());		
+
+      ofstream outfile;
+      outfile.open(output_edge_file.c_str());
+  
+      for (auto const& nrn : n.pop_vec)
+        {
+          for_each(nrn->targets.cbegin(),
+                   nrn->targets.cend(),
+                   [&] (const std::pair<int, NetCon>& item)
+                   { outfile << nrn->id << " " << item.second.target->id << endl; } 
+                   );
+        }
+      outfile.close();
+    }
   
   // Compute the beginning wall-clock time
   time(&timer1);
@@ -110,6 +136,9 @@ int main(int argc, char **argv)
   
   
   printf("Starting simulation; tstop = %f\n", t_stop);
+  printf("gid %d: targets size = %u\n",
+         0, n.pop_vec.at(0)->targets.size());
+
   n.start();
   
   time(&timer1);
@@ -125,24 +154,20 @@ int main(int argc, char **argv)
   
   if (opt_output_file)
     {
-      printf("Writing in %s...",output_file.c_str());		
-      FILE *file = fopen(output_file.c_str(),"w");
+      printf("Writing in %s...",output_spike_file.c_str());		
+
+      ofstream outfile;
+      outfile.open(output_spike_file.c_str());
   
       int k = 0;
-      char buf[20];
       while (!(n.outputs.empty()))
         {
           k++;
           Spike s = n.outputs.front();
           n.outputs.pop();
-          sprintf(buf,"%d",(s.sender));
-          fputs(buf,file);
-          sprintf(buf,"%f",s.t*Taum);
-          fputs(" ",file);
-          fputs(buf,file);
-          fputs("\n",file);
+          outfile << s.sender << " " << s.t*Taum << endl;
         }
-      fclose(file);
+      outfile.close();
     }
   printf("All done!\n");
   

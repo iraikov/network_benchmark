@@ -66,6 +66,7 @@ namespace neuron
     
     double t;                   /**< Current simulation time */
     double tstop;               /**< End of simulation time */
+    double t_DA;                /**< DA update time */
 
     int nb_neurons;	/**< number of neurons in the network */
     size_t num_synapses; /**< number of synapses in the network */
@@ -74,6 +75,9 @@ namespace neuron
     
     std::vector<shared_ptr<SpikeSource>> pop_vec; /**< Vector of neurons in the network */
     std::shared_ptr<Ncq> q;  /**< priority queue with pending spike times */
+    std::shared_ptr<double> DA; /**< global level of dopamine */
+    std::priority_queue<double> reward; /**< priority queue with pending reward times */
+
   };
 
 
