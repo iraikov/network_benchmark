@@ -285,9 +285,12 @@ namespace neuron
       }
   
     // the neuron spikes 
-    for (auto const& item : targets)
+    for (auto& item : targets)
       {
+        // Update post-synaptic neurons
         item.second.target->ReceivePulse(id,time+DELAY,type,item.second.s);
+        // Update synaptic weights according to STDP rule
+        item.second.update(id,time+DELAY,1.0,*DA);
       }
 
     spike_count++;

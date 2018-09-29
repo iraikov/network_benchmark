@@ -3,7 +3,7 @@
    Representation of a synaptic connection.
 
 Created by: Ivan Raikov <iraikov@stanford.edu>
-Last updated : August 2018
+Last updated : September 2018
 
 
 */
@@ -30,7 +30,11 @@ namespace neuron
   
     std::shared_ptr<SpikeSource> source;
     std::shared_ptr<SpikeSource> target;
+    
     double s;
+
+    // STDP rule
+    void update(int sender, double t, double Wmax, double gain);
   };
 
 }

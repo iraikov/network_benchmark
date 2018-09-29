@@ -51,7 +51,6 @@ namespace neuron
     size_t spike_count; /**< Current spike count. */
     double taum; /**< Time units of simulation. */
     double time; /**< Current time for the neuron. */
-    double last_pulse; /**< time of the last pulse, in taum units. */
     double rate; /**< spike frequency, Hz */
     double lambda; /**< interval parameter, ms */
     std::exponential_distribution<double> sample_spike; /**< distribution of spike intervals */
@@ -142,7 +141,6 @@ namespace neuron
     std::shared_ptr<Ncq> queue;      /**< Queue of spikes shared with the network and all other SpikeSource instances. */
     std::deque<float> window; /**< Sliding window of intervals between recent spikes. */
     size_t spike_count; /**< Spike count */
-    double last_pulse; /**< time since the last pulse */
 
     /** 
      * Computes V at t = newtime (relative time) if there is no spike, and if at t = 0, V = V0, g = g0

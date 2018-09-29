@@ -139,6 +139,8 @@ int main(int argc, char **argv)
   printf("gid %d: targets size = %u\n",
          0, n.pop_vec.at(0)->targets.size());
 
+  n.reward.push(50.0);
+  //n.reward.push(100.0);
   n.start();
   
   time(&timer1);

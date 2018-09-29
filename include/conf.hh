@@ -35,6 +35,12 @@ If you modify the source file, please don't delete this header
 #define Dge_ 0.6 	        //Excitatory synaptic weight
 #define Dgi_ 6.7		//Inhibitory synaptic weight
 
+//#################### Synapse parameters ##############
+#define Tau_LTP_ 10.		// Synaptic potentiation time constant, ms
+#define Tau_LTD_ 10.		// Synaptic depression time constant, ms
+#define A_LTP 0.5		// Synaptic potentiation scale factor
+#define A_LTD 0.5		// Synaptic depression scale factor
+
 // Be careful, you must write next values between ( ) 
 #define El__ (-60.)		//Leak reversal potential, mV
 #define Vt__ (-50.)		//Threshold  potential, mV
@@ -43,8 +49,8 @@ If you modify the source file, please don't delete this header
 #define Ei__ (-80.)		//Inhibitory reversal potential, mV
 
 //#################### Reward parameters ##############
-#define DA_T_PEAK_ 1.0 // DA time to peak, ms. 
-#define DA_LAMBDA_ 1.0 // DA decay constant
+#define DA_T_PEAK_ 0.1 // DA time to peak, ms. 
+#define DA_LAMBDA_ 10.0 // DA decay constant
 
 
 //#### Moving rate average parameters ###################
@@ -78,7 +84,9 @@ If the line is commented, the network computes the exact spiking time each time.
 #define DELAY DELAY_/taum	 
 #define Taue (5./Taum) //***
 #define Taui Taue	//***
-#define DA_LAMBDA (-1.0*Taum)
+#define DA_LAMBDA (DA_LAMBDA_/Taum)
+#define Tau_LTP Tau_LTP_/Taum	 
+#define Tau_LTD Tau_LTD_/Taum	 
 
 #define Vt_ (Vt__- El__)   
 #define Vr_ (Vr__- El__ )	

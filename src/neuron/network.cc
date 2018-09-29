@@ -207,27 +207,27 @@ namespace neuron
             else
               { //the time is exact
 #endif //WITH_LOWER_BOUND
-
+                t = s->t;
                 if (!reward.empty())
                   {
-                    if (reward.top() < s->t*Taum)
+                    if (reward.top() <= (t*Taum))
                       {
-                        double t_reward = reward.top()/Taum;
+                        double t_reward = reward.top();
                         reward.pop();
 
-                        if (t_DA >= 0.0)
-                          {
-                            *DA = *DA * exp(-DA_LAMBDA * (t-t_DA)) + alpha((t-t_reward)*Taum, DA_T_PEAK_);
-                          }
-                        else
-                          {
-                            *DA = alpha((t-t_reward)*Taum, DA_T_PEAK_);
-                          }
-                        t_DA = t;
+                        *DA = *DA * exp(-DA_LAMBDA * (t-t_DA)) + alpha((t*Taum)-t_reward, DA_T_PEAK_);
+                      }
+                    else
+                      {
+                        *DA = *DA * exp(-DA_LAMBDA * (t-t_DA));
                       }
                   }
+                else
+                  {
+                    *DA = *DA * exp(-DA_LAMBDA * (t-t_DA));
+                  }
+                t_DA = t;
                 
-                t = s->t;
                 outputs.push(*s);
                 pop_vec.at(s->sender)->pulse();
 

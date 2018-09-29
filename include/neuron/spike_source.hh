@@ -53,7 +53,9 @@ namespace neuron
     int id;                     /**< id for this spike source */
     std::map<int, NetCon> targets; /**< Post-synaptic targets */
     NeuronType type;            /**< Type of spike source */
+    double last_pulse; /**< time of the last pulse */
 
+    
     virtual ~SpikeSource();
     /** 
      * This method is invoked when a spike is received.
