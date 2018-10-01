@@ -31,7 +31,7 @@ namespace neuron
   {
   };
 
-  PoissonSource::PoissonSource(std::shared_ptr<Ncq>& queue, int id, double tauminit, int seed, double rate)
+  PoissonSource::PoissonSource(std::shared_ptr<Ncq>& queue, std::shared_ptr<double>& DA_, int id, double tauminit, int seed, double rate)
   {
     this->id = id;
     this->queue = queue;
@@ -43,6 +43,7 @@ namespace neuron
     this->spike = nullopt;
     this->lambda = rate/1000.0;
     this->type = External;
+    this->DA = DA_;
     
     rand.seed(seed);
     
@@ -59,7 +60,7 @@ namespace neuron
 
   void PoissonSource::update_spike()
   {
-    if (rate > 0.)
+    if (lambda > 0.)
       {
         double sample = sample_spike(rand);
 
@@ -84,9 +85,11 @@ namespace neuron
               }
             window.push_back((time - last_pulse) * taum);
           }
-        for (auto const& item : targets)
+        for (auto & item : targets)
           {
             item.second.target->ReceivePulse(id,spike->t+DELAY,type,item.second.s);
+            // Update synaptic weights according to STDP rule
+            item.second.update(id,time+DELAY,*DA*10.0);
           }
         last_pulse = time;
         time = spike->t;
@@ -100,7 +103,7 @@ namespace neuron
   {
     double result = 0.0;
     double sum = 0.0;
-    if ((spike_count > 1) && (window.size() > 0))
+    if ((spike_count > 2) && (window.size() > 0))
       {
         for(auto it=window.begin(); it!=window.end(); ++it)
           {
@@ -111,6 +114,95 @@ namespace neuron
     return result;
   }
 
+  VectorSource::~VectorSource()
+  {
+  };
+
+  VectorSource::VectorSource(std::shared_ptr<Ncq>& queue, std::shared_ptr<double>& DA_, int id, double tauminit, const vector <double>& vec)
+  {
+    this->id = id;
+    this->queue = queue;
+    this->taum = tauminit;
+    this->spike_count = 0;
+    this->last_pulse = (-2.)*REFRACT;
+    this->time = 0.;
+    this->spike = nullopt;
+    this->type = External;
+    this->DA = DA_;
+    
+    for (auto it : vec)
+      {
+        this->spikes.push_back(it / tauminit);
+      }
+    sort(spikes.begin(), spikes.end());
+    
+    this->update_spike();
+  }
+
+  void VectorSource::ReceivePulse(int sender, double t, NeuronType source_type, double s)
+  {
+    printf("Spike sent to VectorSource id %d: sender = %d", id, sender);
+    throw;
+  }
+
+  void VectorSource::update_spike()
+  {
+    if (spikes.size() > 0)
+      {
+        double sample = spikes.front();
+        spikes.erase(spikes.begin());
+        
+        optional<Spike> newSpike = Spike(id, sample);
+        spike = newSpike;
+
+        queue->insert(*spike);
+      }
+    
+  }
+  
+  void VectorSource::pulse()
+  {
+
+    if (spike.has_value())
+      {
+        if (spike_count > 0)
+          {
+            while (window.size() >= MOVING_AVG_WINDOW_SIZE)
+              {
+                window.pop_front();
+              }
+            window.push_back((time - last_pulse) * taum);
+          }
+        for (auto & item : targets)
+          {
+            item.second.target->ReceivePulse(id,spike->t+DELAY,type,item.second.s);
+            // Update synaptic weights according to STDP rule
+            item.second.update(id,time+DELAY,*DA*10.0);
+          }
+        last_pulse = time;
+        time = spike->t;
+        spike_count++;
+      }
+
+    update_spike();
+  }
+
+  double VectorSource::average_interval()
+  {
+    double result = 0.0;
+    double sum = 0.0;
+    if ((spike_count > 2) && (window.size() > 0))
+      {
+        for(auto it=window.begin(); it!=window.end(); ++it)
+          {
+            sum += *it;
+          }
+        result = sum / (double)(window.size());
+      }
+    return result;
+  }
+
+  
   
   Neuron::~Neuron()
   {
@@ -144,11 +236,9 @@ namespace neuron
     if (gi<0.) gi *= -1.;
     if (V >= Vt) { V = Vt - 0.5; }
   
-  
     Es = (ge*Eeinit + gi*Eiinit)/(ge+gi);
     g = ge + gi;
 
-    stdp = 0.0;
     DA = DA_;
     
     spike = update_spike(false);
@@ -290,7 +380,7 @@ namespace neuron
         // Update post-synaptic neurons
         item.second.target->ReceivePulse(id,time+DELAY,type,item.second.s);
         // Update synaptic weights according to STDP rule
-        item.second.update(id,time+DELAY,1.0,*DA);
+        item.second.update(id,time+DELAY,*DA*10.0);
       }
 
     spike_count++;
@@ -432,7 +522,7 @@ namespace neuron
   {
     double result = 0.0;
     double sum = 0.0;
-    if ((spike_count > 1) && (window.size() > 0))
+    if ((spike_count > 2) && (window.size() > 0))
       {
         for(auto it=window.begin(); it!=window.end(); ++it)
           {

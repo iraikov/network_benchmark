@@ -45,6 +45,7 @@ void print_usage_full(char** argv)
   cout << "Usage: " << string(argv[0]) << " [OPTIONS] " << endl <<
     "Options:" << endl <<
     "-h         Print this help" << endl <<
+    "-i PATH    Path to file with input stimuli" << endl <<
     "-t TSTOP   Simulation until TSTOP ms " << endl <<
     "-o PATH    Write spike times to PATH " << endl <<
     "-p PATH    Write network connections to PATH " << endl <<
@@ -59,9 +60,10 @@ int main(int argc, char **argv)
   time_t timer1;
 
   int seed = 0;
-  string output_spike_file, output_edge_file;
+  string output_spike_file, output_edge_file, input_spike_file;
   double t_stop = 100.0;
   bool opt_t_stop = false;
+  bool opt_input_file = false;
   bool opt_output_file = false;
   bool opt_random_seed = false;
   bool opt_output_edges = false;
@@ -71,7 +73,7 @@ int main(int argc, char **argv)
   };
   char c;
   int option_index = 0;
-  while ((c = getopt_long (argc, argv, "ht:o:s:p:", long_options, &option_index)) != -1)
+  while ((c = getopt_long (argc, argv, "hi:t:o:s:p:", long_options, &option_index)) != -1)
     {
       stringstream ss;
       switch (c)
@@ -82,6 +84,11 @@ int main(int argc, char **argv)
           opt_t_stop = true;
           ss << string(optarg);
           ss >> t_stop;
+          break;
+        case 'i':
+          opt_input_file = true;
+          ss << string(optarg);
+          ss >> input_spike_file;
           break;
         case 'o':
           opt_output_file = true;
@@ -107,26 +114,30 @@ int main(int argc, char **argv)
         }
     }
 
+  vector < vector <double> > input_vector;
+  if (opt_input_file)
+    {
+      ifstream infile(input_spike_file);
+      string line;
+      
+      while (getline(infile, line))
+        {
+          stringstream ss; 
+          double t;  vector <double> input_spikes;
+          ss << line;
+          while (ss >> t)
+            {
+              input_spikes.push_back(t);
+            }
+          input_vector.push_back(input_spikes);
+        }
+    }
   
   // Construct the network 
-  Network n(t_stop, seed);
-  if (opt_output_file)
-    {
-      printf("Writing edges in %s...",output_edge_file.c_str());		
-
-      ofstream outfile;
-      outfile.open(output_edge_file.c_str());
+  Network n(t_stop, seed, input_vector);
+  n.reward.push(180.0);
+  n.reward.push(780.0);
   
-      for (auto const& nrn : n.pop_vec)
-        {
-          for_each(nrn->targets.cbegin(),
-                   nrn->targets.cend(),
-                   [&] (const std::pair<int, NetCon>& item)
-                   { outfile << nrn->id << " " << item.second.target->id << endl; } 
-                   );
-        }
-      outfile.close();
-    }
   
   // Compute the beginning wall-clock time
   time(&timer1);
@@ -136,11 +147,7 @@ int main(int argc, char **argv)
   
   
   printf("Starting simulation; tstop = %f\n", t_stop);
-  printf("gid %d: targets size = %u\n",
-         0, n.pop_vec.at(0)->targets.size());
 
-  n.reward.push(50.0);
-  //n.reward.push(100.0);
   n.start();
   
   time(&timer1);
@@ -153,7 +160,25 @@ int main(int argc, char **argv)
   printf("# of Spikes : %lu\n", n.outputs.size());
   
   printf("Computation time : %d sec\n",(h3-h2)*3600+(m3-m2)*60+s3-s2);
+
+  if (opt_output_edges)
+    {
+      printf("Writing edges in %s...",output_edge_file.c_str());		
+
+      ofstream outfile;
+      outfile.open(output_edge_file.c_str());
   
+      for (auto const& nrn : n.pop_vec)
+        {
+          for_each(nrn->targets.cbegin(),
+                   nrn->targets.cend(),
+                   [&] (const std::pair<int, NetCon>& item)
+                   { outfile << nrn->id << " " << item.second.target->id << " " << item.second.s << endl; } 
+                   );
+        }
+      outfile.close();
+    }
+
   if (opt_output_file)
     {
       printf("Writing in %s...",output_spike_file.c_str());		

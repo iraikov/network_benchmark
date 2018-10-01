@@ -14,7 +14,7 @@ If you modify the source file, please don't delete this header
 ***********************************************************************************************************
 
 Modified by: Ivan Raikov <iraikov@stanford.edu>
-Last updated : August 2018
+Last updated : September 2018
 
 */
 
@@ -55,9 +55,10 @@ namespace neuron
     double lambda; /**< interval parameter, ms */
     std::exponential_distribution<double> sample_spike; /**< distribution of spike intervals */
     std::default_random_engine rand; /**< random number generator */
+    std::shared_ptr<double> DA;/**< level of dopamine above the baseline */
 
     ~PoissonSource();
-    PoissonSource(std::shared_ptr<Ncq>& queue, int id, double tauminit, int seed, double rate);
+    PoissonSource(std::shared_ptr<Ncq>& queue, std::shared_ptr<double>& DA, int id, double tauminit, int seed, double rate);
 
     /** 
      * Not supported in class PoissonSource.
@@ -88,6 +89,54 @@ namespace neuron
     double average_interval();
     
   };
+
+  
+  /*! Source of spikes from a vector of spike times. */  
+  struct VectorSource : public SpikeSource
+  {
+    nonstd::optional<Spike> spike; /**< Spike of the neuron. If no spike, spike = nullopt */
+    std::shared_ptr<Ncq> queue; /**< Queue of spikes: shared with the network and all other SpikeSource instances. */
+    std::deque<float> window; /**< Sliding window of intervals between recent spikes. */
+    size_t spike_count; /**< Current spike count. */
+    double taum; /**< Time units of simulation. */
+    double time; /**< Current time for the neuron. */
+    std::vector<double> spikes; /**< future spike times, in taum units */
+    std::shared_ptr<double> DA;/**< level of dopamine above the baseline */
+
+    ~VectorSource();
+    VectorSource(std::shared_ptr<Ncq>& queue, std::shared_ptr<double>& DA, int id, double tauminit, const std::vector <double>& vec );
+
+    /** 
+     * Not supported in class VectorSource.
+     * 
+     * @param sender the id of the sender spike source
+     * @param t the time of the spike
+     * @param source_type the type of the sender
+     */
+    void ReceivePulse(int sender, double t, NeuronType source_type, double s);
+    
+    /** 
+     * Calls ReceiveSpike on all post-synaptic targets and computes the time of the next spike.
+     * 
+     */
+    void pulse(); 
+
+    /** 
+     * Computes the time of the next spike.
+     * 
+     */
+
+    void update_spike();
+    /** 
+     * Computes and returns the average time interval between spikes.
+     * 
+     * @return Average time interval between spikes.
+     */
+    double average_interval();
+    
+  };
+
+  
 
   /*! Exact simulation of integrate-and-fire neuron. */  
   struct Neuron : public SpikeSource
@@ -135,8 +184,6 @@ namespace neuron
     double dge,dgi; /**< Synaptic weights */
 
     std::shared_ptr<double> DA;/**< level of dopamine above the baseline */
-    double coincidence_interval;  /**< the coincidence interval for plasticity */
-    double stdp;
     
     std::shared_ptr<Ncq> queue;      /**< Queue of spikes shared with the network and all other SpikeSource instances. */
     std::deque<float> window; /**< Sliding window of intervals between recent spikes. */

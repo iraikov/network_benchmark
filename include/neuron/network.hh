@@ -44,7 +44,7 @@ namespace neuron
      * 
      * @return 
      */
-    Network(double tstop, int seed);
+    Network(double tstop, int seed, std::vector < std::vector <double> > input_vector);
     ~Network();
 
     /** 

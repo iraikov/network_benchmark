@@ -40,7 +40,7 @@ namespace neuron
   SpikeSource::~SpikeSource()
   {};
 
-  Network::Network(double tstop_, int seed)
+  Network::Network(double tstop_, int seed, vector <vector <double> > input_vector)
   {
 
     t = 0.0;
@@ -63,67 +63,96 @@ namespace neuron
     std::default_random_engine rand;
     rand.seed(seed);
     
-    std::normal_distribution<double> sample_Vinit(-5.0,5.0);
-    std::normal_distribution<double> sample_geinit(4.0,1.5);
-    std::normal_distribution<double> sample_giinit(20.0,12.0);
+    std::normal_distribution<double> sample_Vinit(-60.0,1.0);
+    std::normal_distribution<double> sample_geinit(1.0,1.0);
+    std::normal_distribution<double> sample_giinit(-2.0,1.0);
+    std::normal_distribution<double> sample_Vt(Vt_,5.0);
     std::uniform_real_distribution<double> sample_connect(0.0,1.0);
   
-    // initialization of external input units.
-    for (int i=0;i<EXT_INPUTS;i++)
-      {
-        shared_ptr <PoissonSource> p(new PoissonSource(q,i,Taum,i,EXT_RATE));
-        pop_vec.push_back(p);
-      }
 
     int offset_inhibitory = EXT_INPUTS+INHIBITORY_NEURONS;
     int start_inhibitory = EXT_INPUTS;
     
     int offset_excitatory = EXT_INPUTS+NEURONS;
     int start_excitatory = EXT_INPUTS+INHIBITORY_NEURONS;
+
+    int offset_neurons = EXT_INPUTS+NEURONS;
+    int start_neurons = start_inhibitory;
     
-    int offset_output = EXT_INPUTS+EXT_OUTPUTS+NEURONS;
-    int start_output = EXT_INPUTS+NEURONS;
+    int offset_outputs = EXT_INPUTS+EXT_OUTPUTS+NEURONS;
+    int start_outputs = EXT_INPUTS+NEURONS;
+
+    int offset_inputs = EXT_INPUTS;
+    int start_inputs = 0;
+
+    // initialization of external input units.
+    if (input_vector.size() == 0) 
+      {
+        // if empty input vector, initialize external inputs as Poisson spike sources
+        for (int i=start_inputs;i<offset_inputs;i++)
+          {
+            shared_ptr <PoissonSource> p(new PoissonSource(q,DA,i,Taum,i,EXT_RATE));
+            pop_vec.push_back(p);
+          }
+      }
+    else
+      {
+        // initialize external inputs using the provided input vector
+        for (int i=start_inputs;i<offset_inputs;i++)
+          {
+            shared_ptr <VectorSource> p(new VectorSource(q,DA,i,Taum,input_vector.at(i)));
+            pop_vec.push_back(p);
+          }
+      }
     
     // initialization of inhibitory and excitatory neurons.
     for (int i=start_inhibitory;i<offset_inhibitory;i++)
       {
+        double Vt = sample_Vt(rand);
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
         double giinit = sample_giinit(rand);
-        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Inhibitory,i));
+        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Inhibitory,i));
         pop_vec.push_back(p);
       }
     
     for (int i=start_excitatory;i<offset_excitatory;i++)
       {
+        double Vt = sample_Vt(rand);
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
         double giinit = sample_giinit(rand);
-        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
+        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
         pop_vec.push_back(p);
       }
     
-    for (int i=start_output;i<offset_output;i++)
+    for (int i=start_outputs;i<offset_outputs;i++)
       {
+        double Vt = sample_Vt(rand);
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
         double giinit = sample_giinit(rand);
-        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt_,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
+        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
         pop_vec.push_back(p);
       }
 
 
     // Recurrent connectivity within inhibitory + excitatory population
-    for (int i=EXT_INPUTS;i<EXT_INPUTS+NEURONS;i++)
+    for (int i=start_neurons;i<offset_neurons;i++)
       {
-        for (int j=EXT_INPUTS;j<EXT_INPUTS+NEURONS;j++)
+        double Wmax = 0.0;
+        if (pop_vec[i]->type == Excitatory)
+          {
+            Wmax = WMAX;
+          }
+        for (int j=start_neurons;j<offset_neurons;j++)
           {
             if (i!=j)
               {
                 double prob = sample_connect(rand);
                 if (prob <= PROB_SYNAPSES)
                   {
-                    NetCon nc(pop_vec.at(i), pop_vec.at(j), 1.0);
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmax, 1.0);
                     pop_vec.at(i)->targets.insert(make_pair(j, nc));
                     num_synapses++;
                   }
@@ -132,16 +161,22 @@ namespace neuron
       }
     
     // Convergence onto output neurons
-    for (int i=EXT_INPUTS;i<EXT_INPUTS+NEURONS;i++)
+    for (int i=start_neurons;i<offset_neurons;i++)
       {
-        for (int j=EXT_INPUTS+NEURONS;j<EXT_INPUTS+NEURONS+EXT_OUTPUTS;j++)
+        double Wmax = 0.0;
+        if (pop_vec[i]->type == Excitatory)
+          {
+            Wmax = WMAX;
+          }
+
+        for (int j=start_outputs;j<offset_outputs;j++)
           {
             if (i!=j)
               {
                 double prob = sample_connect(rand);
                 if (prob <= PROB_OUTPUT_SYNAPSES)
                   {
-                    NetCon nc(pop_vec.at(i), pop_vec.at(j), 1.0);
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmax, 1.0);
                     pop_vec.at(i)->targets.insert(make_pair(j, nc));
                     num_synapses++;
                     num_output_synapses++;
@@ -149,17 +184,18 @@ namespace neuron
               }
           }
       }
+
     // External inputs to inhibitory + excitatory population
-    for (int i=0;i<EXT_INPUTS;i++)
+    for (int i=start_inputs;i<offset_inputs;i++)
       {
-        for (int j=EXT_INPUTS;j<EXT_INPUTS+NEURONS;j++)
+        for (int j=start_neurons;j<offset_neurons;j++)
           {
             if (i!=j)
               {
                 double prob = sample_connect(rand);
                 if (prob <= PROB_EXT_SYNAPSES)
                   {
-                    NetCon nc(pop_vec.at(i), pop_vec.at(j), 1.0);
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), 0.0, 1.0);
                     pop_vec.at(i)->targets.insert(make_pair(j, nc));
                     num_synapses++;
                     num_input_synapses++;

@@ -18,38 +18,38 @@ If you modify the source file, please don't delete this header
 //###########################CONFIGURATION########################################																	
 
 //########## NETWORK #######
-#define EXT_INPUTS 100			// number of external inputs
-#define EXT_OUTPUTS 100			// number of external outputs
-#define EXT_RATE 10.			// firing rate of external inputs
+#define EXT_INPUTS 20			// number of external inputs
+#define EXT_OUTPUTS 20			// number of external outputs
+#define EXT_RATE 0.1			// firing rate of external inputs
 #define NEURONS 1000			// number of neurons		
-#define AVERAGE_SYNAPSES 120		// Average number of synapses per neuron
-#define AVERAGE_EXT_SYNAPSES 100        // Average number of synapses per external source
-#define AVERAGE_OUTPUT_SYNAPSES 250     // Average number of synapses per output
-#define INHIBITORY_PROPORTION 0.2	// Inhibitory neurons proportion
-
+#define MEAN_SYNAPSES 250		// Average number of synapses per neuron
+#define MEAN_EXT_SYNAPSES 200           // Mean number of synapses per external source
+#define MEAN_OUTPUT_SYNAPSES 5          // Mean number of synapses per output
+#define INHIBITORY_PROPORTION 0.2       // Inhibitory neurons proportion
 
 //#################### Neuron parameters ##############
 #define REFRACT_ 2.0		//Length of the refractory period, ms. 
-#define DELAY_ 1.0		//Length of the delay
+#define DELAY_ 1.5		//Length of the delay
 #define Taum 20.		//Membrane time constant, ms
-#define Dge_ 0.6 	        //Excitatory synaptic weight
-#define Dgi_ 6.7		//Inhibitory synaptic weight
+#define Dge_ 0.9 	        //Excitatory synaptic weight
+#define Dgi_ -5.5		//Inhibitory synaptic weight
 
 //#################### Synapse parameters ##############
-#define Tau_LTP_ 10.		// Synaptic potentiation time constant, ms
-#define Tau_LTD_ 10.		// Synaptic depression time constant, ms
-#define A_LTP 0.5		// Synaptic potentiation scale factor
-#define A_LTD 0.5		// Synaptic depression scale factor
+#define Tau_LTP_ 500.		// Synaptic potentiation time constant, ms
+#define Tau_LTD_ 500.		// Synaptic depression time constant, ms
+#define A_LTP 6.0		// Synaptic potentiation scale factor
+#define A_LTD 1.0		// Synaptic depression scale factor
+#define WMAX 8.0                //Maximum weight change
 
 // Be careful, you must write next values between ( ) 
 #define El__ (-60.)		//Leak reversal potential, mV
-#define Vt__ (-50.)		//Threshold  potential, mV
+#define Vt__ (-40.)		//Threshold  potential, mV
 #define Vr__ (-60.)		//Reset potential, mV
 #define Ee__ (0.)		//Excitatory reversal potential, mV
 #define Ei__ (-80.)		//Inhibitory reversal potential, mV
 
 //#################### Reward parameters ##############
-#define DA_T_PEAK_ 0.1 // DA time to peak, ms. 
+#define DA_T_PEAK_ 1.0 // DA time to peak, ms. 
 #define DA_LAMBDA_ 10.0 // DA decay constant
 
 
@@ -76,9 +76,9 @@ If the line is commented, the network computes the exact spiking time each time.
 
 //################################## DON'T MODIFY NEXT LINES: #######################################"
 #define INHIBITORY_NEURONS ((int)(NEURONS*INHIBITORY_PROPORTION))									
-#define PROB_SYNAPSES ((double)AVERAGE_SYNAPSES / (double)NEURONS)
-#define PROB_EXT_SYNAPSES ((double)AVERAGE_EXT_SYNAPSES / (double)NEURONS)
-#define PROB_OUTPUT_SYNAPSES ((double)AVERAGE_OUTPUT_SYNAPSES / (double)NEURONS)
+#define PROB_SYNAPSES ((double)MEAN_SYNAPSES / (double)NEURONS)
+#define PROB_EXT_SYNAPSES ((double)MEAN_EXT_SYNAPSES / (double)NEURONS)
+#define PROB_OUTPUT_SYNAPSES ((double)MEAN_OUTPUT_SYNAPSES / (double)NEURONS)
 #define EPS 0.00000001
 #define REFRACT REFRACT_/taum	 
 #define DELAY DELAY_/taum	 
