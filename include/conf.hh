@@ -22,8 +22,8 @@ If you modify the source file, please don't delete this header
 #define EXT_OUTPUTS 20			// number of external outputs
 #define EXT_RATE 0.1			// firing rate of external inputs
 #define NEURONS 1000			// number of neurons		
-#define MEAN_SYNAPSES 250		// Average number of synapses per neuron
-#define MEAN_EXT_SYNAPSES 200           // Mean number of synapses per external source
+#define MEAN_SYNAPSES 220		// Average number of synapses per neuron
+#define MEAN_EXT_SYNAPSES 120           // Mean number of synapses per external source
 #define MEAN_OUTPUT_SYNAPSES 5          // Mean number of synapses per output
 #define INHIBITORY_PROPORTION 0.2       // Inhibitory neurons proportion
 
@@ -31,15 +31,16 @@ If you modify the source file, please don't delete this header
 #define REFRACT_ 2.0		//Length of the refractory period, ms. 
 #define DELAY_ 1.5		//Length of the delay
 #define Taum 20.		//Membrane time constant, ms
-#define Dge_ 0.9 	        //Excitatory synaptic weight
-#define Dgi_ -5.5		//Inhibitory synaptic weight
+#define Dge_ 1.0 	        //Excitatory synaptic weight
+#define Dgi_ -6.0		//Inhibitory synaptic weight
 
 //#################### Synapse parameters ##############
 #define Tau_LTP_ 500.		// Synaptic potentiation time constant, ms
 #define Tau_LTD_ 500.		// Synaptic depression time constant, ms
 #define A_LTP 6.0		// Synaptic potentiation scale factor
 #define A_LTD 1.0		// Synaptic depression scale factor
-#define WMAX 8.0                //Maximum weight change
+#define WMAX 8.0               //Maximum weight change
+#define WMIN -2.0              //Minimum weight change
 
 // Be careful, you must write next values between ( ) 
 #define El__ (-60.)		//Leak reversal potential, mV

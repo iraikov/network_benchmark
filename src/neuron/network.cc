@@ -140,6 +140,7 @@ namespace neuron
     // Recurrent connectivity within inhibitory + excitatory population
     for (int i=start_neurons;i<offset_neurons;i++)
       {
+        double Wmin = WMIN;
         double Wmax = 0.0;
         if (pop_vec[i]->type == Excitatory)
           {
@@ -152,7 +153,7 @@ namespace neuron
                 double prob = sample_connect(rand);
                 if (prob <= PROB_SYNAPSES)
                   {
-                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmax, 1.0);
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
                     pop_vec.at(i)->targets.insert(make_pair(j, nc));
                     num_synapses++;
                   }
@@ -163,6 +164,7 @@ namespace neuron
     // Convergence onto output neurons
     for (int i=start_neurons;i<offset_neurons;i++)
       {
+        double Wmin = WMIN;
         double Wmax = 0.0;
         if (pop_vec[i]->type == Excitatory)
           {
@@ -176,7 +178,7 @@ namespace neuron
                 double prob = sample_connect(rand);
                 if (prob <= PROB_OUTPUT_SYNAPSES)
                   {
-                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmax, 1.0);
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
                     pop_vec.at(i)->targets.insert(make_pair(j, nc));
                     num_synapses++;
                     num_output_synapses++;
@@ -195,7 +197,7 @@ namespace neuron
                 double prob = sample_connect(rand);
                 if (prob <= PROB_EXT_SYNAPSES)
                   {
-                    NetCon nc(pop_vec.at(i), pop_vec.at(j), 0.0, 1.0);
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), 0.0, 0.0, 1.0);
                     pop_vec.at(i)->targets.insert(make_pair(j, nc));
                     num_synapses++;
                     num_input_synapses++;

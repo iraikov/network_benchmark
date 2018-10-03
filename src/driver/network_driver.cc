@@ -60,10 +60,11 @@ int main(int argc, char **argv)
   time_t timer1;
 
   int seed = 0;
-  string output_spike_file, output_edge_file, input_spike_file;
+  string output_spike_file, output_edge_file, input_spike_file, input_reward_file;
   double t_stop = 100.0;
   bool opt_t_stop = false;
   bool opt_input_file = false;
+  bool opt_input_reward = false;
   bool opt_output_file = false;
   bool opt_random_seed = false;
   bool opt_output_edges = false;
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
   };
   char c;
   int option_index = 0;
-  while ((c = getopt_long (argc, argv, "hi:t:o:s:p:", long_options, &option_index)) != -1)
+  while ((c = getopt_long (argc, argv, "hi:t:o:s:p:r:", long_options, &option_index)) != -1)
     {
       stringstream ss;
       switch (c)
@@ -99,6 +100,11 @@ int main(int argc, char **argv)
           opt_output_edges = true;
           ss << string(optarg);
           ss >> output_edge_file;
+          break;
+        case 'r':
+          opt_input_reward = true;
+          ss << string(optarg);
+          ss >> input_reward_file;
           break;
         case 's':
           opt_random_seed = true;
@@ -132,12 +138,31 @@ int main(int argc, char **argv)
           input_vector.push_back(input_spikes);
         }
     }
+
+  vector <double> input_reward_vector;
+  if (opt_input_reward)
+    {
+      ifstream infile(input_reward_file);
+      string line;
+      
+      while (getline(infile, line))
+        {
+          stringstream ss; 
+          double t;  
+          ss << line;
+          if (ss >> t)
+            {
+              input_reward_vector.push_back(t);
+            }
+        }
+    }
   
   // Construct the network 
   Network n(t_stop, seed, input_vector);
-  n.reward.push(180.0);
-  n.reward.push(780.0);
-  
+  for (auto const& t : input_reward_vector)
+    {
+      n.reward.push(t);
+    }
   
   // Compute the beginning wall-clock time
   time(&timer1);

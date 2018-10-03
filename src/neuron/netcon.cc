@@ -37,6 +37,7 @@ namespace neuron
     else if (Wmax > 0.0)
       {
         w = (-A_LTD) * exp(-x / Tau_LTD);
+        if (w < Wmin) w = Wmin;
       }
     this->s += w;
   }

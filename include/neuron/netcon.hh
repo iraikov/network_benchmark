@@ -21,18 +21,19 @@ namespace neuron
       and synaptic strength. */
   struct NetCon
   {
-    NetCon(std::shared_ptr<SpikeSource>& source, std::shared_ptr<SpikeSource>& target, double Wmax, double strength)
+    NetCon(std::shared_ptr<SpikeSource>& source, std::shared_ptr<SpikeSource>& target, double Wmin, double Wmax, double strength)
     {
       this->source = source;
       this->target = target;
       this->s = strength;
       this->Wmax = Wmax;
+      this->Wmin = Wmin;
     };
   
     std::shared_ptr<SpikeSource> source;
     std::shared_ptr<SpikeSource> target;
 
-    double Wmax;
+    double Wmin, Wmax;
     double s;
     
     // STDP rule
