@@ -12,20 +12,20 @@ namespace neuron
   {
     double t_postsyn = this->target->last_pulse;
     double x = t_presyn - t_postsyn;
-    double w=0.0;
+    double dw=0.0;
     if ((Wmax > 0.0) && (gain > 1e-6))
       {
 
         if (x > 0.0)
           {
-            w = (Wmax - A_LTP * exp(-x / Tau_LTP)) * gain;
-            if (w < 0.0) w = 0.0;
+            dw = (Wmax - A_LTP * exp(-x / Tau_LTP)) * gain;
+            if (dw < 0.0) dw = 0.0;
           }
         else
           {
-            w = (-A_LTD) * exp(-x / Tau_LTD) * gain;
+            dw = (-A_LTD) * exp(-x / Tau_LTD) * gain;
           }
-
+        
         /*
         if (gain > 0.0)
           {
@@ -36,9 +36,9 @@ namespace neuron
       }
     else if (Wmax > 0.0)
       {
-        w = (-A_LTD) * exp(-x / Tau_LTD);
-        if (w < Wmin) w = Wmin;
+        dw = (-A_LTD) * exp(-x / Tau_LTD);
+        if (dw < Wmin) dw = Wmin;
       }
-    this->s += w;
+    this->s += dw;
   }
 }

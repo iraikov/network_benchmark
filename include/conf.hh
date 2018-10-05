@@ -35,10 +35,10 @@ If you modify the source file, please don't delete this header
 #define Dgi_ -6.0		//Inhibitory synaptic weight
 
 //#################### Synapse parameters ##############
-#define Tau_LTP_ 500.		// Synaptic potentiation time constant, ms
-#define Tau_LTD_ 500.		// Synaptic depression time constant, ms
-#define A_LTP 6.0		// Synaptic potentiation scale factor
-#define A_LTD 1.0		// Synaptic depression scale factor
+#define Tau_LTP_ 14.		// Synaptic potentiation time constant, ms
+#define Tau_LTD_ 34.		// Synaptic depression time constant, ms
+#define A_LTP 1.03		// Synaptic potentiation scale factor
+#define A_LTD 0.51		// Synaptic depression scale factor
 #define WMAX 8.0               //Maximum weight change
 #define WMIN -2.0              //Minimum weight change
 
