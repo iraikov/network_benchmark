@@ -139,11 +139,11 @@ namespace neuron
   
 
   /*! Exact simulation of integrate-and-fire neuron. */  
-  struct Neuron : public SpikeSource
+  struct EIFNeuron : public SpikeSource
   {
 
     // Constructor & destructor
-    ~Neuron();
+    ~EIFNeuron();
 
     /** 
      * Neuron constructor.
@@ -165,7 +165,7 @@ namespace neuron
      * @param id id of the neuron
      * 
      */
-    Neuron(std::shared_ptr<Ncq>& queue, std::shared_ptr<double>& DA, double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double tauminit, double dgiinit, double dgeinit, NeuronType type_, int id);
+    EIFNeuron(std::shared_ptr<Ncq>& queue, std::shared_ptr<double>& DA, double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double tauminit, double dgiinit, double dgeinit, NeuronType type_, int id);
 
     void ReceivePulse(int sender, double t, NeuronType source_type, double s); 
     void pulse(); 
@@ -233,6 +233,72 @@ namespace neuron
 #endif
 
     double B; /**< Bound for Newton Raphson Method */
+    /** 
+     * Computes the average time interval between spikes.
+     * 
+     * 
+     * @return Average time interval between spikes in milliseconds.
+     */
+    double average_interval();
+  };
+
+  /*! Numerical integration of Izhikevich-type neuron. */  
+  struct IzhNeuron : public SpikeSource
+  {
+
+    // Constructor & destructor
+    ~IzhNeuron();
+
+    /** 
+     * Neuron constructor.
+     * 
+     * @param queue Queue of spikes shared with the network and all other SpikeSource instances.
+     * @param Vinit initial potential 
+     * @param Vrinit reset potential
+     * @param Vtinit spike threshold potential
+     * @param Elinit leak reversal potential
+     * @param Eeinit excitatory reversal potential
+     * @param Eiinit inhibitory reversal potential
+     * @param geinit initial excitatory conductance
+     * @param giinit initial inhibitory conductance
+     * @param tausinit synaptic time constant
+     * @param tauminit membrane time constant
+     * @param dgiinit inhibitory synaptic weight
+     * @param dgeinit excitatory synaptic weight
+     * @param type_ enumerated value from NeuronType
+     * @param id id of the neuron
+     * 
+     */
+    IzhNeuron(std::shared_ptr<Ncq>& queue, std::shared_ptr<double>& DA, double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double Cminit, double dgiinit, double dgeinit, NeuronType type_, int id);
+
+    void ReceivePulse(int sender, double t, NeuronType source_type, double s); 
+    void pulse(); 
+	
+    nonstd::optional<Spike> spike; /**< Spike of the neuron. If no spike, spike = nullopt */
+
+    double time; /**< Current time for the neuron */
+    double V,Vt,Vr; /**< V = Current potential, threshold, reset potential */
+    double El,Es,Ee,Ei; /**< Reversal potential */
+    double taus,Cm; /**< Synaptic time constant and membrane capacitance */
+    double g,ge,gi; /**< Membrane and synaptic conductances */
+    double dge,dgi; /**< Synaptic weights */
+
+    std::shared_ptr<double> DA;/**< level of dopamine above the baseline */
+    
+    std::shared_ptr<Ncq> queue;      /**< Queue of spikes shared with the network and all other SpikeSource instances. */
+    std::deque<float> window; /**< Sliding window of intervals between recent spikes. */
+    size_t spike_count; /**< Spike count */
+
+    /** 
+     * Computes V at t = newtime (relative time) if there is no spike.
+     * 
+     * @param newtime 
+     * 
+     * @return updated membrane potential
+     */
+    double calcV(double newtime, double V0, double g0);
+
+
     /** 
      * Computes the average time interval between spikes.
      * 

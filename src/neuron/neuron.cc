@@ -204,12 +204,12 @@ namespace neuron
 
   
   
-  Neuron::~Neuron()
+  EIFNeuron::~EIFNeuron()
   {
   };
 
 
-  Neuron::Neuron(std::shared_ptr<Ncq>& queue_, std::shared_ptr<double>& DA_, double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double tauminit, double dgiinit, double dgeinit, NeuronType type_, int id_)  {
+  EIFNeuron::EIFNeuron(std::shared_ptr<Ncq>& queue_, std::shared_ptr<double>& DA_, double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double tauminit, double dgiinit, double dgeinit, NeuronType type_, int id_)  {
     V = Vinit;
     El = Elinit;
   
@@ -252,7 +252,7 @@ namespace neuron
 
 
 
-  void Neuron::ReceivePulse(int sender, double t, NeuronType source_type, double s)
+  void EIFNeuron::ReceivePulse(int sender, double t, NeuronType source_type, double s)
   {
 	
     double gPulse;
@@ -346,7 +346,7 @@ namespace neuron
 
 
   // Called after spike of the neuron has been taken off the queue.
-  void Neuron::pulse()
+  void EIFNeuron::pulse()
   {
 
     if (!spike.has_value())
@@ -389,7 +389,7 @@ namespace neuron
 
 
   // Return the new updated spike of the neuron
-  optional<Spike> Neuron::update_spike(bool exact)
+  optional<Spike> EIFNeuron::update_spike(bool exact)
   {
     double g_star;
     double V_g_star;
@@ -449,7 +449,7 @@ namespace neuron
   };
 
 
-  double Neuron::calcV(double newtime, double V0, double g0)
+  double EIFNeuron::calcV(double newtime, double V0, double g0)
   {
   
     //gt = g0(newtime)
@@ -458,7 +458,7 @@ namespace neuron
   }
 
 
-  double Neuron::findNextSpike(double V0, double g0)
+  double EIFNeuron::findNextSpike(double V0, double g0)
   {
 
     double T = 0.;
@@ -484,7 +484,7 @@ namespace neuron
 #ifdef WITH_LOWER_BOUND
 
   //The same as findNextSpike() but with only few iterations for the newton raphson method
-  double Neuron::lowerBound(double V0, double g0)
+  double EIFNeuron::lowerBound(double V0, double g0)
   {
     double T = 0.;
     double gT = g0;
@@ -508,7 +508,7 @@ namespace neuron
 
 
 
-  void Neuron::update()
+  void EIFNeuron::update()
   {
     spike = update_spike(true);
     if (spike != null)
@@ -518,7 +518,7 @@ namespace neuron
   };
 #endif //WITH_LOWER_BOUND
 
-  double Neuron::average_interval()
+  double EIFNeuron::average_interval()
   {
     double result = 0.0;
     double sum = 0.0;
@@ -532,6 +532,49 @@ namespace neuron
       }
     return result;
   }
+
+  IzhNeuron::~IzhNeuron()
+  {
+  };
+
+
+  IzhNeuron::IzhNeuron(std::shared_ptr<Ncq>& queue_, std::shared_ptr<double>& DA_, double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double Cminit, double dgiinit, double dgeinit, double a, double b, double c, NeuronType type_, int id_)  {
+    V = Vinit;
+    El = Elinit;
+  
+    ge = geinit;
+    gi = giinit;
+    Vr = Vrinit;
+    Vt = Vtinit;
+    Ee = Eeinit;
+    Ei = Eiinit;
+    dgi = dgiinit;
+    dge = dgeinit;
+    taus = tausinit;
+    Cm = Cminit;
+    type = type_;
+    id = id_;
+    queue = queue_;
+    spike_count = 0;
+  
+    last_pulse = (-2.)*REFRACT;
+    time = 0.;
+    
+    if (ge<0.) ge *= -1.;  
+    if (gi<0.) gi *= -1.;
+    if (V >= Vt) { V = Vt - 0.5; }
+  
+    Es = (ge*Eeinit + gi*Eiinit)/(ge+gi);
+    g = ge + gi;
+
+    DA = DA_;
+    
+    spike = update_spike();
+    if (spike.has_value())
+      {
+        queue->insert(*spike);
+      }
+  };
 
 }
 
