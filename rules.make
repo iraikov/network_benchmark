@@ -14,6 +14,7 @@ SRC      	:= $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.cc))
 OBJ       	:= $(patsubst src/%.cc,build/%.o,$(SRC))
 INCLUDES  	:= $(addprefix -I,$(INC_DIR) include $(HDF5_INCDIR) $(MPI_INCDIR))
 
+
 vpath %.cc $(SRC_DIR):$(DRIVER_SRC_DIR)
 
 define make-goal
@@ -31,7 +32,7 @@ build/network_driver: build/driver/network_driver.o build/libneuron.data.a build
 build/libneuron.data.a: $(OBJ)
 	$(AR) cr $@ $^
 
-build/libneuron.neuron.a: $(OBJ)
+build/libneuron.neuron.a: $(OBJ) 
 	$(AR) cr $@ $^
 
 checkdirs: $(BUILD_DIR) $(DRIVER_BUILD_DIR)

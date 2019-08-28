@@ -22,10 +22,12 @@ If you modify the source file, please don't delete this header
 #define EXT_OUTPUTS 20			// number of external outputs
 #define EXT_RATE 0.1			// firing rate of external inputs
 #define NEURONS 1000			// number of neurons		
-#define MEAN_SYNAPSES 220		// Average number of synapses per neuron
+#define MEAN_SYNAPSES 220		// Mean number of synapses per neuron
 #define MEAN_EXT_SYNAPSES 120           // Mean number of synapses per external source
 #define MEAN_OUTPUT_SYNAPSES 5          // Mean number of synapses per output
 #define INHIBITORY_PROPORTION 0.2       // Inhibitory neurons proportion
+#define EXC_DISTANCE 200		// maximum connection "distance" between excitatory neurons,
+                                        // measured in number of units
 
 //#################### Neuron parameters ##############
 #define REFRACT_ 2.0		//Length of the refractory period, ms. 
@@ -50,8 +52,8 @@ If you modify the source file, please don't delete this header
 #define Ei__ (-80.)		//Inhibitory reversal potential, mV
 
 //#################### Reward parameters ##############
-#define DA_T_PEAK_ 1.0 // DA time to peak, ms. 
-#define DA_LAMBDA_ 10.0 // DA decay constant
+#define DA_T_PEAK_ 20.0 // DA time to peak, ms. 
+#define DA_LAMBDA_ 50.0 // DA decay constant
 
 
 //#### Moving rate average parameters ###################

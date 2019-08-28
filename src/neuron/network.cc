@@ -20,6 +20,7 @@ Last updated : August 2018
 */
 
 #include <memory>
+#include <algorithm>
 #include "nonstd/optional.hh"
 #include "netcon.hh"
 #include "network.hh"
@@ -68,7 +69,8 @@ namespace neuron
     std::normal_distribution<double> sample_giinit(-2.0,1.0);
     std::normal_distribution<double> sample_Vt(Vt_,5.0);
     std::uniform_real_distribution<double> sample_connect(0.0,1.0);
-  
+
+    int excitatory_distance = EXC_DISTANCE;
 
     int offset_inhibitory = EXT_INPUTS+INHIBITORY_NEURONS;
     int start_inhibitory = EXT_INPUTS;
@@ -137,8 +139,51 @@ namespace neuron
       }
 
 
-    // Recurrent connectivity within inhibitory + excitatory population
-    for (int i=start_neurons;i<offset_neurons;i++)
+    // Recurrent connectivity within excitatory population
+    for (int i=start_excitatory;i<offset_excitatory;i++)
+      {
+        double Wmin = WMIN;
+        double Wmax = 0.0;
+        if (pop_vec[i]->type == Excitatory)
+          {
+            Wmax = WMAX;
+          }
+        // All excitatory neurons connect to inhibitory population
+        for (int j=start_inhibitory;j<offset_inhibitory;j++)
+          {
+            if (i!=j)
+              {
+                double prob = sample_connect(rand);
+                if (prob <= PROB_SYNAPSES)
+                  {
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
+                    pop_vec.at(i)->targets.insert(make_pair(j, nc));
+                    num_synapses++;
+                  }
+              }
+          }
+        // Excitatory neurons connect only to "proximal" excitatory neurons
+        for (int j=std::max(start_excitatory, i-excitatory_distance);
+             j<std::min(offset_excitatory, i+excitatory_distance);
+             j++)
+          {
+            if (i!=j)
+              {
+                double prob = sample_connect(rand);
+                if (prob <= PROB_SYNAPSES)
+                  {
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
+                    pop_vec.at(i)->targets.insert(make_pair(j, nc));
+                    num_synapses++;
+                  }
+              }
+          }
+        
+
+      }
+
+    // Recurrent connectivity from inhibtory to inhibitory + excitatory population
+    for (int i=start_inhibitory;i<offset_inhibitory;i++)
       {
         double Wmin = WMIN;
         double Wmax = 0.0;
@@ -252,8 +297,18 @@ namespace neuron
                       {
                         double t_reward = reward.top();
                         reward.pop();
-
-                        *DA = *DA * exp(-DA_LAMBDA * (t-t_DA)) + alpha((t*Taum)-t_reward, DA_T_PEAK_);
+                        printf("reward: %f\n", t_reward);
+                        printf("DA prev: %f\n", exp(-DA_LAMBDA * (t-t_DA)));
+                        printf("DA period: %f\n", (t*Taum)-t_reward);
+                        printf("DA rhs: %f\n", alpha((t*Taum)-t_reward, DA_T_PEAK_));
+                        if (t_DA > 0.)
+                          {
+                            *DA = exp(-DA_LAMBDA * (t-t_DA)) + alpha((t*Taum)-t_reward, DA_T_PEAK_);
+                          }
+                        else
+                          {
+                             *DA = alpha((t*Taum)-t_reward, DA_T_PEAK_);
+                          }
                       }
                     else
                       {
@@ -268,10 +323,10 @@ namespace neuron
                 
                 outputs.push(*s);
                 pop_vec.at(s->sender)->pulse();
-
                 double average_interval = pop_vec.at(s->sender)->average_interval();
                 printf("%d %f %f\n",s->sender,s->t*Taum,
                        average_interval > 0.0 ? (1000.0 / average_interval) : 0.0);
+                printf("DA: %f at %f\n", *DA, t_DA*Taum);
               }
 #ifdef WITH_LOWER_BOUND
           }

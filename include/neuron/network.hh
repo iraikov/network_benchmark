@@ -21,6 +21,7 @@ Last updated : August 2018
 
 #include <vector>
 #include <memory>
+#include <functional>
 #include <queue>
 #include <random>
 #include <stdio.h>
@@ -76,7 +77,7 @@ namespace neuron
     std::vector<shared_ptr<SpikeSource>> pop_vec; /**< Vector of neurons in the network */
     std::shared_ptr<Ncq> q;  /**< priority queue with pending spike times */
     std::shared_ptr<double> DA; /**< global level of dopamine */
-    std::priority_queue<double> reward; /**< priority queue with pending reward times */
+    std::priority_queue<double, std::vector<double>, std::greater<double>> reward; /**< priority queue with pending reward times */
 
   };
 
