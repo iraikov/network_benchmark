@@ -533,48 +533,5 @@ namespace neuron
     return result;
   }
 
-  IzhNeuron::~IzhNeuron()
-  {
-  };
-
-
-  IzhNeuron::IzhNeuron(std::shared_ptr<Ncq>& queue_, std::shared_ptr<double>& DA_, double Vinit, double Vrinit, double Vtinit,double Elinit,double Eeinit, double Eiinit, double geinit, double giinit, double tausinit, double Cminit, double dgiinit, double dgeinit, double a, double b, double c, NeuronType type_, int id_)  {
-    V = Vinit;
-    El = Elinit;
-  
-    ge = geinit;
-    gi = giinit;
-    Vr = Vrinit;
-    Vt = Vtinit;
-    Ee = Eeinit;
-    Ei = Eiinit;
-    dgi = dgiinit;
-    dge = dgeinit;
-    taus = tausinit;
-    Cm = Cminit;
-    type = type_;
-    id = id_;
-    queue = queue_;
-    spike_count = 0;
-  
-    last_pulse = (-2.)*REFRACT;
-    time = 0.;
-    
-    if (ge<0.) ge *= -1.;  
-    if (gi<0.) gi *= -1.;
-    if (V >= Vt) { V = Vt - 0.5; }
-  
-    Es = (ge*Eeinit + gi*Eiinit)/(ge+gi);
-    g = ge + gi;
-
-    DA = DA_;
-    
-    spike = update_spike();
-    if (spike.has_value())
-      {
-        queue->insert(*spike);
-      }
-  };
-
 }
 

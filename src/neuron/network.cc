@@ -112,7 +112,7 @@ namespace neuron
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
         double giinit = sample_giinit(rand);
-        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Inhibitory,i));
+        shared_ptr <EIFNeuron> p (new EIFNeuron(q,DA,Vinit,Vr_,Vt,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Inhibitory,i));
         pop_vec.push_back(p);
       }
     
@@ -122,7 +122,7 @@ namespace neuron
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
         double giinit = sample_giinit(rand);
-        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
+        shared_ptr <EIFNeuron> p (new EIFNeuron(q,DA,Vinit,Vr_,Vt,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
         pop_vec.push_back(p);
       }
     
@@ -132,7 +132,7 @@ namespace neuron
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
         double giinit = sample_giinit(rand);
-        shared_ptr <Neuron> p (new Neuron(q,DA,Vinit,Vr_,Vt,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
+        shared_ptr <EIFNeuron> p (new EIFNeuron(q,DA,Vinit,Vr_,Vt,El_,Ee_,Ei_,geinit,giinit,Taui,Taum,Dgi_,Dge_,Excitatory,i));
         pop_vec.push_back(p);
       }
 
