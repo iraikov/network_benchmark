@@ -235,6 +235,8 @@ namespace neuron
     // External inputs to inhibitory + excitatory population
     for (int i=start_inputs;i<offset_inputs;i++)
       {
+        double Wmin = WMIN;
+        double Wmax = 0.0;
         for (int j=start_neurons;j<offset_neurons;j++)
           {
             if (i!=j)
@@ -242,7 +244,16 @@ namespace neuron
                 double prob = sample_connect(rand);
                 if (prob <= PROB_EXT_SYNAPSES)
                   {
-                    NetCon nc(pop_vec.at(i), pop_vec.at(j), 0.0, 0.0, 1.0);
+                    if ((pop_vec[i]->type == External) &&
+                        (pop_vec[j]->type == Excitatory))
+                      {
+                        Wmax = WMAX;
+                      }
+                    else
+                      {
+                        Wmax = 0.0;
+                      }
+                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
                     pop_vec.at(i)->targets.insert(make_pair(j, nc));
                     num_synapses++;
                     num_input_synapses++;

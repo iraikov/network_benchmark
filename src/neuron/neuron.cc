@@ -87,9 +87,9 @@ namespace neuron
           }
         for (auto & item : targets)
           {
-            item.second.target->ReceivePulse(id,spike->t+DELAY,type,item.second.s);
             // Update synaptic weights according to STDP rule
-            item.second.update(id,time+DELAY,*DA*10.0);
+            item.second.update(id,time+DELAY,*DA);
+            item.second.target->ReceivePulse(id,spike->t+DELAY,type,item.second.s);
           }
         last_pulse = time;
         time = spike->t;
@@ -175,9 +175,9 @@ namespace neuron
           }
         for (auto & item : targets)
           {
-            item.second.target->ReceivePulse(id,spike->t+DELAY,type,item.second.s);
             // Update synaptic weights according to STDP rule
-            item.second.update(id,time+DELAY,*DA*10.0);
+            item.second.update(id,time+DELAY,*DA);
+            item.second.target->ReceivePulse(id,spike->t+DELAY,type,item.second.s);
           }
         last_pulse = time;
         time = spike->t;
@@ -377,10 +377,10 @@ namespace neuron
     // the neuron spikes 
     for (auto& item : targets)
       {
+        // Update synaptic weights according to STDP rule
+        item.second.update(id,time+DELAY,*DA);
         // Update post-synaptic neurons
         item.second.target->ReceivePulse(id,time+DELAY,type,item.second.s);
-        // Update synaptic weights according to STDP rule
-        item.second.update(id,time+DELAY,*DA*10.0);
       }
 
     spike_count++;
