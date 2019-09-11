@@ -26,7 +26,7 @@ If you modify the source file, please don't delete this header
 #define MEAN_EXT_SYNAPSES 120           // Mean number of synapses per external source
 #define MEAN_OUTPUT_SYNAPSES 5          // Mean number of synapses per output
 #define INHIBITORY_PROPORTION 0.2       // Inhibitory neurons proportion
-#define EXC_DISTANCE 200		// maximum connection "distance" between excitatory neurons,
+#define CONNECTION_DISTANCE 400		// maximum connection "distance" between neurons,
                                         // measured in number of units
 
 //#################### Neuron parameters ##############
