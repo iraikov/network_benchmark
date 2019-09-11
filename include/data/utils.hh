@@ -45,15 +45,7 @@ void IFSC_Done();
 double tableRho(double g);
 double rho(double g);
 double alpha(double t, double t_peak);
+double skewnormpdf(double x, double a, double loc, double scale);
 
-
-
-/*
-double gamma(double x);
-
-
-double incog(double a,double x);
-
-double rho(double a, double x);*/
 #endif // UTILS_H
 

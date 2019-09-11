@@ -241,3 +241,34 @@ double alpha(double t, double t_peak)
 
   return result;
 }
+
+// ************************************************************
+// Cumulative standard normal distribution function
+// ************************************************************
+
+double snormcdf(double x)
+{
+  return 0.5 * erfc(-x * M_SQRT1_2);
+}
+
+// ************************************************************
+// Standard normal probability density function
+// ************************************************************
+double snormpdf(double x)
+{
+    static const double inv_sqrt_2pi = 0.3989422804014327;
+
+    return inv_sqrt_2pi * std::exp(-0.5 * x * x);
+}
+
+// ************************************************************
+// Skew normal probability density function
+// ************************************************************
+double skewnormpdf(double x, double a, double loc, double scale)
+{
+  double y = (x - loc) / scale;
+
+  double result = 2.0 * snormpdf(y) * snormcdf(a * y);
+
+  return result;
+}

@@ -68,9 +68,8 @@ namespace neuron
     std::normal_distribution<double> sample_geinit(1.0,1.0);
     std::normal_distribution<double> sample_giinit(-2.0,1.0);
     std::normal_distribution<double> sample_Vt(Vt_,5.0);
-    std::uniform_real_distribution<double> sample_connect(0.0,1.0);
 
-    int excitatory_distance = EXC_DISTANCE;
+    int connection_distance = CONNECTION_DISTANCE;
 
     int offset_inhibitory = EXT_INPUTS+INHIBITORY_NEURONS;
     int start_inhibitory = EXT_INPUTS;
@@ -148,60 +147,81 @@ namespace neuron
           {
             Wmax = WMAX;
           }
-        // All excitatory neurons connect to inhibitory population
-        for (int j=start_inhibitory;j<offset_inhibitory;j++)
-          {
-            if (i!=j)
-              {
-                double prob = sample_connect(rand);
-                if (prob <= PROB_SYNAPSES)
-                  {
-                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
-                    pop_vec.at(i)->targets.insert(make_pair(j, nc));
-                    num_synapses++;
-                  }
-              }
-          }
-        // Excitatory neurons connect only to "proximal" excitatory neurons
-        for (int j=std::max(start_excitatory, i-excitatory_distance);
-             j<std::min(offset_excitatory, i+excitatory_distance);
-             j++)
-          {
-            if (i!=j)
-              {
-                double prob = sample_connect(rand);
-                if (prob <= PROB_SYNAPSES)
-                  {
-                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
-                    pop_vec.at(i)->targets.insert(make_pair(j, nc));
-                    num_synapses++;
-                  }
-              }
-          }
-        
+
+        // std::lognormal_distribution<double> sample_connect(0.0,1.0);
+        // CONNECTION_DISTANCE
+
+        { // All excitatory neurons connect to inhibitory population according to a normal distribution
+          
+          vector< std::pair<int,double> > neighbors;
+          vector< std::pair<int,double> > neighbors_probdist;
+          vector< int > selected_neighbors;
+          
+          get_neighbors(i%INHIBITORY_NEURONS, start_inhibitory, offset_inhibitory, EXC_CONNECTION_DISTANCE, neighbors);
+          get_norm_probdist(neighbors, neighbors_probdist);
+          choose_connections(rand, neighbors_probdist, NUM_SYNAPSES, selected_neighbors);
+          
+          for (int j : selected_neighbors)
+            {
+              if (i!=j)
+                {
+                  NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
+                  pop_vec.at(i)->targets.insert(make_pair(j, nc));
+                  num_synapses++;
+                }
+            }
+        }
+
+        { // Excitatory neurons connect to excitatory neurons as determined by a skew normal distribution
+          
+          vector< std::pair<int,double> > neighbors;
+          vector< std::pair<int,double> > neighbors_probdist;
+          vector< int > selected_neighbors;
+          
+          get_neighbors(i, start_excitatory, offset_excitatory, EXC_CONNECTION_DISTANCE, neighbors);
+          get_skewnorm_probdist(neighbors, EXC_CONNECTION_SKEW, neighbors_probdist);
+          choose_connections(rand, neighbors_probdist, NUM_SYNAPSES, selected_neighbors);
+          
+          for (int j : selected_neighbors)
+            {
+              if (i!=j)
+                {
+                  NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
+                  pop_vec.at(i)->targets.insert(make_pair(j, nc));
+                  num_synapses++;
+                }
+            }
+        }
 
       }
 
-    // Recurrent connectivity from inhibtory to inhibitory + excitatory population
+    // Connectivity from inhibitory to excitatory population
     for (int i=start_inhibitory;i<offset_inhibitory;i++)
       {
+                  
+        vector< std::pair<int,double> > neighbors;
+        vector< std::pair<int,double> > neighbors_probdist;
+        vector< int > selected_neighbors;
+        
+        get_neighbors((i*(1.0/INHIBITORY_PROPORTION))%EXCITATORY_NEURONS,
+                      start_excitatory, offset_excitatory,
+                      INH_CONNECTION_DISTANCE, neighbors);
+        get_norm_probdist(neighbors, neighbors_probdist);
+        choose_connections(rand, neighbors_probdist, NUM_SYNAPSES, selected_neighbors);
+        
         double Wmin = WMIN;
         double Wmax = 0.0;
         if (pop_vec[i]->type == Excitatory)
           {
             Wmax = WMAX;
           }
-        for (int j=start_neurons;j<offset_neurons;j++)
+        for (int j : selected_neighbors)
           {
             if (i!=j)
               {
-                double prob = sample_connect(rand);
-                if (prob <= PROB_SYNAPSES)
-                  {
-                    NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
-                    pop_vec.at(i)->targets.insert(make_pair(j, nc));
-                    num_synapses++;
-                  }
+                NetCon nc(pop_vec.at(i), pop_vec.at(j), Wmin, Wmax, 1.0);
+                pop_vec.at(i)->targets.insert(make_pair(j, nc));
+                num_synapses++;
               }
           }
       }
