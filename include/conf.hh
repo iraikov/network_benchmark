@@ -22,14 +22,14 @@ If you modify the source file, please don't delete this header
 #define EXT_OUTPUTS 20			// number of external outputs
 #define EXT_RATE 0.1			// firing rate of external inputs
 #define NEURONS 1000			// number of neurons		
-#define NUM_SYNAPSES 220		// Mean number of synapses per neuron
-#define NUM_EXT_SYNAPSES 120           // Mean number of synapses per external source
+#define NUM_SYNAPSES 200		// Mean number of synapses per neuron
+#define NUM_EXT_SYNAPSES 120            // Mean number of synapses per input
 #define NUM_OUTPUT_SYNAPSES 5          // Mean number of synapses per output
 #define INHIBITORY_PROPORTION 0.2       // Inhibitory neurons proportion
 #define EXC_CONNECTION_DISTANCE 400     // maximum connection "distance" from excitatory neurons,
                                         // measured in number of units
-#define EXC_CONNECTION_SKEW 2.0		// parameter for skew normal connectivity
-#define INH_CONNECTION_DISTANCE 800     // maximum connection "distance" from inhibitory neurons,
+#define EXC_CONNECTION_SKEW 2.0 	// parameter for skew normal connectivity
+#define INH_CONNECTION_DISTANCE 400     // maximum connection "distance" from inhibitory neurons,
                                         // measured in number of units
 
 //#################### Neuron parameters ##############
@@ -81,10 +81,8 @@ If the line is commented, the network computes the exact spiking time each time.
 
 
 //################################## DON'T MODIFY NEXT LINES: #######################################"
-#define INHIBITORY_NEURONS ((int)(NEURONS*INHIBITORY_PROPORTION))									
-#define PROB_SYNAPSES ((double)MEAN_SYNAPSES / (double)NEURONS)
-#define PROB_EXT_SYNAPSES ((double)MEAN_EXT_SYNAPSES / (double)NEURONS)
-#define PROB_OUTPUT_SYNAPSES ((double)MEAN_OUTPUT_SYNAPSES / (double)NEURONS)
+#define INHIBITORY_NEURONS ((int)(NEURONS*INHIBITORY_PROPORTION))
+#define EXCITATORY_NEURONS ((int)(NEURONS-INHIBITORY_NEURONS))
 #define EPS 0.00000001
 #define REFRACT REFRACT_/taum	 
 #define DELAY DELAY_/taum	 

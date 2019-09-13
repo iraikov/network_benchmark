@@ -46,6 +46,7 @@ double tableRho(double g);
 double rho(double g);
 double alpha(double t, double t_peak);
 double skewnormpdf(double x, double a, double loc, double scale);
+double snormpdf(double x);
 
 #endif // UTILS_H
 

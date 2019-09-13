@@ -49,6 +49,7 @@ void print_usage_full(char** argv)
     "-t TSTOP   Simulation until TSTOP ms " << endl <<
     "-o PATH    Write spike times to PATH " << endl <<
     "-p PATH    Write network connections to PATH " << endl <<
+    "-r PATH    Path to file with reward stimuli " << endl <<
     "-s SEED    Random number generator seed " << endl <<
     endl;
 }

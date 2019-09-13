@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 output = np.loadtxt("output_20190828.dat")
+output = np.loadtxt("output_20190912.dat")
 
 stimgrp = 5
 numstim = 4
@@ -19,7 +20,10 @@ color_list = ["#00FF00", "#0000FF", "#FF0000", "#01FFFE", "#FFA6FE",
 
 
 fig = plt.figure()
-scp = plt.scatter(output[:,1],output[:,0],s=9,linewidths=1.,marker='o',alpha=0.5)
+nrnidx = np.where((output[:,0] >= 20) & (output[:,0] < 1020))
+outidx = np.where((output[:,0] >= 1020))
+scp_nrn = plt.scatter(output[nrnidx,1],output[nrnidx,0],s=9,linewidths=1.,marker='o',alpha=0.5)
+scp_out = plt.scatter(output[outidx,1],output[outidx,0],s=9,linewidths=1.,marker='x',alpha=0.5)
 plt.xlabel('Time (ms)', fontsize=14)
 plt.ylabel('Cell Index', fontsize=14)
 

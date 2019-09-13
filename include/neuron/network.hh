@@ -14,7 +14,7 @@ If you modify the source file, please don't delete this header
 ***********************************************************************************************************
 
 Modified by: Ivan Raikov <iraikov@stanford.edu>
-Last updated : August 2018
+Last updated : August 2019
 
 */
 
@@ -33,6 +33,17 @@ Last updated : August 2018
 
 namespace neuron
 {
+
+  typedef unsigned int distance_t ;
+  
+  /*! Point neuron coordinates */
+  struct Coords
+  {
+    Coords(int phi);
+    ~Coords();
+    
+    int phi;
+  };
   
   /*! Event-based simulation of a recurrent neural network with integrate-and-fire units. */  
   struct Network
@@ -75,9 +86,96 @@ namespace neuron
     size_t num_output_synapses; /**< number of output synapses in the network */
     
     std::vector<shared_ptr<SpikeSource>> pop_vec; /**< Vector of neurons in the network */
+    std::vector< Coords > coords;  /**< Vector of neuron coordinates */
+
     std::shared_ptr<Ncq> q;  /**< priority queue with pending spike times */
     std::shared_ptr<double> DA; /**< global level of dopamine */
     std::priority_queue<double, std::vector<double>, std::greater<double>> reward; /**< priority queue with pending reward times */
+
+  };
+
+  
+  /*! Connection generator for recurrent neural network. */  
+  struct ConnectionGenerator
+  {
+    /** 
+     * Network constructor.
+     * 
+     * @param tstop duration of simulation, ms 
+     * @param seed random number generator seed
+     * 
+     * @return 
+     */
+    ConnectionGenerator(int seed, size_t coords_extent,
+                        
+                        std::vector<shared_ptr<SpikeSource>>& pop_vec,
+                        std::vector< Coords >& coords,
+
+                        distance_t exc_connection_distance,
+                        distance_t inh_connection_distance,
+                        
+                        int offset_inhibitory,
+                        int start_inhibitory,
+    
+                        int offset_excitatory,
+                        int start_excitatory,
+
+                        int offset_neurons,
+                        int start_neurons,
+    
+                        int offset_outputs,
+                        int start_outputs,
+                        
+                        int offset_inputs,
+                        int start_inputs);
+                        
+
+    ~ConnectionGenerator();
+
+    /** 
+     * Instantiate skew normal ring architecture.
+     * 
+     */
+    void skewnormal_ring(size_t& num_synapses, size_t& num_input_synapses, size_t& num_output_synapses);
+
+    void get_norm_probdist(const std::vector< std::pair<int,distance_t> >& neighbors,
+                           distance_t connection_distance,
+                           std::vector< std::pair<int,double> >& neighbors_probdist);
+    
+    void get_skewnorm_probdist(const std::vector< std::pair<int,distance_t> >& neighbors,
+                               distance_t connection_distance, double a,
+                               std::vector< std::pair<int,double> >& neighbors_probdist);
+    
+    void get_neighbors(int loc, int start, int offset, distance_t connection_distance, std::vector <std::pair<int,distance_t> >& neighbors);
+    void choose_connections(std::default_random_engine& rand,
+                            const std::vector< std::pair<int,double> >& neighbors_probdist,
+                            size_t num_synapses,
+                            std::vector <int>& selected_neighbors);
+    
+
+    int seed;
+    size_t coords_extent;
+
+    std::vector<shared_ptr<SpikeSource>>& pop_vec; /**< Vector of neurons in the network */
+    std::vector< Coords >& coords;
+    
+    distance_t exc_connection_distance;
+    distance_t inh_connection_distance;
+
+    int offset_inhibitory;
+    int start_inhibitory;
+    
+    int offset_excitatory;
+    int start_excitatory;
+
+    int offset_neurons;
+    int start_neurons;
+    
+    int offset_outputs;
+    int start_outputs;
+
+    int offset_inputs;
+    int start_inputs;
 
   };
 
