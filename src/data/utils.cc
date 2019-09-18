@@ -1,7 +1,7 @@
 
 #include "utils.hh"
 
-
+using namespace std;
 // *****************************************************************
 // Exact simulation of integrate-and-fire models with
 // exponential synaptic conductances
@@ -258,7 +258,7 @@ double snormpdf(double x)
 {
     static const double inv_sqrt_2pi = 0.3989422804014327;
 
-    return inv_sqrt_2pi * std::exp(-0.5 * x * x);
+    return inv_sqrt_2pi * exp(-0.5 * x * x);
 }
 
 // ************************************************************

@@ -13,8 +13,12 @@ namespace neuron
     double t_postsyn = this->target->last_pulse;
     double x = t_presyn - t_postsyn;
     double dw=0.0;
-    printf("stdp update %d -> %d: t_presyn = %f x = %f gain = %f\n",
-           this->source->id, this->target->id, t_presyn, x, gain);
+
+    if (this->target->id >= 1220)
+      {
+        printf("stdp update %d -> %d: t_presyn = %f x = %f gain = %f\n",
+               this->source->id, this->target->id, t_presyn, x, gain);
+      }
     if ((Wmax > 0.0) && (gain > 1e-6))
       {
 
@@ -27,11 +31,14 @@ namespace neuron
           {
             dw = (-A_LTD) * exp(-x / Tau_LTD) * gain;
           }
-        
-        if (gain > 0.0)
+
+        if (this->target->id >= 1220)
           {
-            printf("stdp update %d -> %d: t_presyn = %f x = %f gain = %f dw = %f\n",
-                   this->source->id, this->target->id, t_presyn, x, gain, dw);
+            if (gain > 0.0)
+              {
+                printf("stdp update %d -> %d: t_presyn = %f x = %f gain = %f dw = %f\n",
+                       this->source->id, this->target->id, t_presyn, x, gain, dw);
+              }
           }
 
       }

@@ -21,12 +21,12 @@ If you modify the source file, please don't delete this header
 #define EXT_INPUTS 20			// number of external inputs
 #define EXT_OUTPUTS 20			// number of external outputs
 #define EXT_RATE 0.1			// firing rate of external inputs
-#define NEURONS 1000			// number of neurons		
+#define NEURONS 1000			// number of neurons per module
 #define NUM_SYNAPSES 200		// Mean number of synapses per neuron
 #define NUM_EXT_SYNAPSES 120            // Mean number of synapses per input
-#define NUM_OUTPUT_SYNAPSES 5          // Mean number of synapses per output
+#define NUM_OUTPUT_SYNAPSES 6           // Mean number of synapses per output
 #define INHIBITORY_PROPORTION 0.2       // Inhibitory neurons proportion
-#define EXC_CONNECTION_DISTANCE 400     // maximum connection "distance" from excitatory neurons,
+#define EXC_CONNECTION_DISTANCE 200     // maximum connection "distance" from excitatory neurons,
                                         // measured in number of units
 #define EXC_CONNECTION_SKEW 2.0 	// parameter for skew normal connectivity
 #define INH_CONNECTION_DISTANCE 400     // maximum connection "distance" from inhibitory neurons,

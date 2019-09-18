@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-output = np.loadtxt("output_20190828.dat")
-output = np.loadtxt("output_20190912.dat")
+#output = np.loadtxt("output_20190828.dat")
+output = np.loadtxt("results_20190917.dat")
 
 stimgrp = 5
 numstim = 4

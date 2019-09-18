@@ -71,7 +71,7 @@ namespace neuron
     std::normal_distribution<double> sample_Vinit(-60.0,1.0);
     std::normal_distribution<double> sample_geinit(1.0,1.0);
     std::normal_distribution<double> sample_giinit(-2.0,1.0);
-    std::normal_distribution<double> sample_Vt(Vt_,5.0);
+    std::normal_distribution<double> sample_Vt(Vt_,2.0);
 
     int offset_inhibitory = EXT_INPUTS+INHIBITORY_NEURONS;
     int start_inhibitory = EXT_INPUTS;
@@ -147,7 +147,8 @@ namespace neuron
     
     for (int i=start_outputs;i<offset_outputs;i++)
       {
-        double Vt = sample_Vt(rand);
+        int module = (i%4) + 1;
+        double Vt = sample_Vt(rand) + module*3.;
         double Vinit = sample_Vinit(rand);
         double geinit = sample_geinit(rand);
         double giinit = sample_giinit(rand);
@@ -418,9 +419,9 @@ namespace neuron
         vector< int > selected_neighbors;
           
         get_neighbors(i, start_outputs, offset_outputs, exc_connection_distance, neighbors);
-        get_norm_probdist(neighbors, exc_connection_distance, neighbors_probdist);
+        get_skewnorm_probdist(neighbors, exc_connection_distance, EXC_CONNECTION_SKEW, neighbors_probdist);
         choose_connections(rand, neighbors_probdist, NUM_OUTPUT_SYNAPSES, selected_neighbors);
-          
+
         for (int j : selected_neighbors)
           {
             if (i!=j)
